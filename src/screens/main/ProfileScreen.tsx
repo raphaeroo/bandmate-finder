@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../../styles/theme';
@@ -15,9 +16,80 @@ import Header from '../../components/Header';
 import ProfileGrid from '../../components/ProfileGrid';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { USER_TYPES } from '../../utils/constants';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ProfileStackParamList } from '../../navigation/MainNavigator';
+
+type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileScreen'>;
+
+interface Location {
+  city: string;
+  state: string;
+}
+
+interface Genre {
+  id: string;
+  name: string;
+}
+
+interface Instrument {
+  id: string;
+  name: string;
+}
+
+interface BandMember {
+  id: string;
+  name: string;
+  role: string;
+  instrument: string;
+}
+
+interface Band {
+  id: string;
+  name: string;
+  role: string;
+}
+
+interface Post {
+  id: string;
+  imageUrl: string;
+  type: 'image' | 'video';
+  caption: string;
+  likes: number;
+  comments: number;
+  createdAt: string;
+  imageCount?: number;
+}
+
+interface BaseUser {
+  id: string;
+  name: string;
+  type: typeof USER_TYPES[keyof typeof USER_TYPES];
+  profileImage: string;
+  coverImage: string;
+  bio: string;
+  location: Location;
+  genres: Genre[];
+  isAvailable: boolean;
+  followers: number;
+  following: number;
+}
+
+interface MusicianUser extends BaseUser {
+  type: typeof USER_TYPES.MUSICIAN;
+  instruments: Instrument[];
+  bands: Band[];
+}
+
+interface BandUser extends BaseUser {
+  type: typeof USER_TYPES.BAND;
+  members: BandMember[];
+  openPositions: Instrument[];
+}
+
+type UserProfile = MusicianUser | BandUser;
 
 // Mock data for user profile
-const mockUserMusician = {
+const mockUserMusician: MusicianUser = {
   id: '1',
   name: 'John Doe',
   type: USER_TYPES.MUSICIAN,
@@ -42,7 +114,7 @@ const mockUserMusician = {
   following: 87,
 };
 
-const mockUserBand = {
+const mockUserBand: BandUser = {
   id: '2',
   name: 'Rock Legends',
   type: USER_TYPES.BAND,
@@ -68,7 +140,7 @@ const mockUserBand = {
 };
 
 // Mock posts data
-const mockPosts = [
+const mockPosts: Post[] = [
   {
     id: '1',
     imageUrl: 'https://via.placeholder.com/300',
@@ -126,10 +198,10 @@ const mockPosts = [
   },
 ];
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { user, logout } = useAuth();
-  const [profileData, setProfileData] = useState(null);
-  const [posts, setPosts] = useState([]);
+  const [profileData, setProfileData] = useState<UserProfile | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -169,21 +241,24 @@ const ProfileScreen = ({ navigation }) => {
     navigation.navigate('Settings');
   };
 
-  const handlePostPress = (post) => {
+  const handlePostPress = (post: Post) => {
     // In a real app, navigate to post detail screen
     console.log('Post pressed:', post);
   };
 
   const handleAddPost = () => {
-    navigation.navigate('CreatePost');
+    // TODO: Implement CreatePost navigation when screen is added to navigator
+    console.log('Add post pressed');
   };
 
-  const handleMemberPress = (member) => {
-    navigation.navigate('MusicianProfile', { musicianId: member.id });
+  const handleMemberPress = (member: BandMember) => {
+    // TODO: Implement MusicianProfile navigation when screen is added to navigator
+    console.log('Member pressed:', member);
   };
 
-  const handleBandPress = (band) => {
-    navigation.navigate('BandProfile', { bandId: band.id });
+  const handleBandPress = (band: Band) => {
+    // TODO: Implement BandProfile navigation when screen is added to navigator
+    console.log('Band pressed:', band);
   };
 
   const renderProfileHeader = () => {
@@ -253,122 +328,60 @@ const ProfileScreen = ({ navigation }) => {
                     style={styles.memberItem}
                     onPress={() => handleMemberPress(member)}
                   >
-                    <Text style={styles.memberName}>{member.name}</Text>
-                    <Text style={styles.memberRole}>{member.role}</Text>
+                    <Image
+                      source={{ uri: 'https://via.placeholder.com/50' }}
+                      style={styles.memberImage}
+                    />
+                    <View style={styles.memberInfo}>
+                      <Text style={styles.memberName}>{member.name}</Text>
+                      <Text style={styles.memberRole}>{member.role}</Text>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
           )}
-          
-          {/* Bands (for musicians) or Open Positions (for bands) */}
-          {profileData.type === USER_TYPES.MUSICIAN && profileData.bands && profileData.bands.length > 0 ? (
-            <View style={styles.bandsContainer}>
-              <Text style={styles.sectionTitle}>Bands:</Text>
-              <View style={styles.bandsList}>
-                {profileData.bands.map((band) => (
-                  <TouchableOpacity
-                    key={band.id}
-                    style={styles.bandItem}
-                    onPress={() => handleBandPress(band)}
-                  >
-                    <Text style={styles.bandName}>{band.name}</Text>
-                    <Text style={styles.bandRole}>{band.role}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          ) : profileData.type === USER_TYPES.BAND && profileData.openPositions && profileData.openPositions.length > 0 ? (
-            <View style={styles.openPositionsContainer}>
-              <Text style={styles.sectionTitle}>Looking for:</Text>
-              <View style={styles.tagsContainer}>
-                {profileData.openPositions.map((position) => (
-                  <View key={position.id} style={[styles.tagChip, styles.openPositionChip]}>
-                    <Text style={styles.tagText}>{position.name}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ) : null}
-          
-          {/* Bio */}
-          <View style={styles.bioContainer}>
-            <Text style={styles.sectionTitle}>Bio:</Text>
-            <Text style={styles.bioText}>{profileData.bio}</Text>
-          </View>
-          
-          {/* Stats */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{profileData.followers}</Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{profileData.following}</Text>
-              <Text style={styles.statLabel}>Following</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{posts.length}</Text>
-              <Text style={styles.statLabel}>Posts</Text>
-            </View>
-          </View>
-          
-          {/* Action Buttons */}
-          <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity
-              style={styles.editProfileButton}
-              onPress={handleEditProfile}
-            >
-              <Text style={styles.editProfileButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={handleSettings}
-            >
-              <Ionicons name="settings-outline" size={24} color={COLORS.PRIMARY} />
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     );
   };
 
-  if (loading && !profileData) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <Header title="Profile" />
+  const renderPosts = () => {
+    if (loading) {
+      return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.PRIMARY} />
         </View>
-      </SafeAreaView>
+      );
+    }
+
+    return (
+      <ProfileGrid
+        posts={posts}
+      />
     );
-  }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header 
-        title="Profile" 
-        rightIcon="log-out-outline" 
-        onRightPress={logout} 
+      <Header
+        title="Profile"
+        rightIcon="settings-outline"
+        onRightPress={handleSettings}
       />
-      
       <ScrollView
         style={styles.container}
-        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.PRIMARY]}
+            tintColor={COLORS.PRIMARY}
+          />
+        }
       >
         {renderProfileHeader()}
-        
-        <View style={styles.postsContainer}>
-          <Text style={styles.postsTitle}>Posts</Text>
-          <ProfileGrid
-            posts={posts}
-            onPressPost={handlePostPress}
-            onPressAdd={handleAddPost}
-            isOwner={true}
-            refresh={refreshing}
-            onRefresh={handleRefresh}
-          />
-        </View>
+        {renderPosts()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -382,46 +395,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   profileHeaderContainer: {
-    backgroundColor: COLORS.WHITE,
-    ...SHADOWS.MEDIUM,
-    borderRadius: BORDER_RADIUS.MEDIUM,
-    margin: SPACING.MEDIUM,
-    overflow: 'hidden',
+    position: 'relative',
+    marginBottom: SPACING.MEDIUM,
   },
   coverImage: {
     width: '100%',
-    height: 150,
+    height: 200,
+    resizeMode: 'cover',
   },
   profileImageContainer: {
     position: 'absolute',
-    top: 100,
+    bottom: -50,
     left: SPACING.MEDIUM,
-    borderRadius: 75,
-    borderWidth: 4,
-    borderColor: COLORS.WHITE,
+    borderRadius: BORDER_RADIUS.LARGE,
     ...SHADOWS.MEDIUM,
   },
   profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: BORDER_RADIUS.LARGE,
+    borderWidth: 3,
+    borderColor: COLORS.WHITE,
   },
   profileInfoContainer: {
-    marginTop: 60,
     padding: SPACING.MEDIUM,
+    paddingTop: 60,
   },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: SPACING.TINY,
   },
   name: {
-    fontSize: FONT_SIZE.EXTRA_LARGE,
+    fontSize: FONT_SIZE.LARGE,
     fontWeight: 'bold',
     color: COLORS.DARK_TEXT,
     marginRight: SPACING.SMALL,
@@ -429,7 +436,7 @@ const styles = StyleSheet.create({
   availabilityBadge: {
     backgroundColor: COLORS.SUCCESS,
     paddingHorizontal: SPACING.SMALL,
-    paddingVertical: 2,
+    paddingVertical: SPACING.TINY,
     borderRadius: BORDER_RADIUS.SMALL,
   },
   availabilityText: {
@@ -438,151 +445,71 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   location: {
-    fontSize: FONT_SIZE.MEDIUM,
+    fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
-    marginTop: SPACING.TINY,
+    marginBottom: SPACING.SMALL,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: SPACING.SMALL,
+    marginBottom: SPACING.MEDIUM,
   },
   tagChip: {
-    backgroundColor: COLORS.SECONDARY,
+    backgroundColor: COLORS.LIGHT_GRAY,
     paddingHorizontal: SPACING.SMALL,
     paddingVertical: SPACING.TINY,
-    borderRadius: BORDER_RADIUS.ROUND,
-    marginRight: SPACING.SMALL,
-    marginBottom: SPACING.SMALL,
-  },
-  openPositionChip: {
-    backgroundColor: COLORS.ACCENT,
+    borderRadius: BORDER_RADIUS.SMALL,
+    marginRight: SPACING.TINY,
+    marginBottom: SPACING.TINY,
   },
   tagText: {
     fontSize: FONT_SIZE.SMALL,
     color: COLORS.DARK_TEXT,
   },
+  sectionTitle: {
+    fontSize: FONT_SIZE.MEDIUM,
+    fontWeight: 'bold',
+    color: COLORS.DARK_TEXT,
+    marginBottom: SPACING.SMALL,
+  },
   instrumentsContainer: {
-    marginTop: SPACING.MEDIUM,
+    marginBottom: SPACING.MEDIUM,
   },
   membersContainer: {
-    marginTop: SPACING.MEDIUM,
+    marginBottom: SPACING.MEDIUM,
   },
   membersList: {
     marginTop: SPACING.SMALL,
   },
   memberItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.SMALL,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.LIGHT_GRAY,
+    alignItems: 'center',
+    marginBottom: SPACING.SMALL,
+  },
+  memberImage: {
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.MEDIUM,
+    marginRight: SPACING.SMALL,
+  },
+  memberInfo: {
+    flex: 1,
   },
   memberName: {
     fontSize: FONT_SIZE.REGULAR,
     color: COLORS.DARK_TEXT,
-    fontWeight: '500',
+    marginBottom: SPACING.TINY,
   },
   memberRole: {
     fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
   },
-  bandsContainer: {
-    marginTop: SPACING.MEDIUM,
-  },
-  bandsList: {
-    marginTop: SPACING.SMALL,
-  },
-  bandItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.SMALL,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.LIGHT_GRAY,
-  },
-  bandName: {
-    fontSize: FONT_SIZE.REGULAR,
-    color: COLORS.DARK_TEXT,
-    fontWeight: '500',
-  },
-  bandRole: {
-    fontSize: FONT_SIZE.SMALL,
-    color: COLORS.GRAY,
-  },
-  openPositionsContainer: {
-    marginTop: SPACING.MEDIUM,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZE.REGULAR,
-    fontWeight: 'bold',
-    color: COLORS.DARK_TEXT,
-    marginBottom: SPACING.TINY,
-  },
-  bioContainer: {
-    marginTop: SPACING.MEDIUM,
-  },
-  bioText: {
-    fontSize: FONT_SIZE.MEDIUM,
-    color: COLORS.DARK_TEXT,
-    lineHeight: 22,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    marginTop: SPACING.LARGE,
-    padding: SPACING.MEDIUM,
-    backgroundColor: COLORS.SECONDARY,
-    borderRadius: BORDER_RADIUS.MEDIUM,
-  },
-  statItem: {
+  loadingContainer: {
     flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: FONT_SIZE.LARGE,
-    fontWeight: 'bold',
-    color: COLORS.PRIMARY,
-  },
-  statLabel: {
-    fontSize: FONT_SIZE.SMALL,
-    color: COLORS.GRAY,
-    marginTop: SPACING.TINY,
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    marginTop: SPACING.LARGE,
-  },
-  editProfileButton: {
-    flex: 1,
-    backgroundColor: COLORS.PRIMARY,
-    borderRadius: BORDER_RADIUS.MEDIUM,
-    paddingVertical: SPACING.MEDIUM,
-    alignItems: 'center',
-    marginRight: SPACING.MEDIUM,
-  },
-  editProfileButtonText: {
-    color: COLORS.WHITE,
-    fontSize: FONT_SIZE.REGULAR,
-    fontWeight: 'bold',
-  },
-  settingsButton: {
-    width: 50,
-    height: 50,
-    backgroundColor: COLORS.SECONDARY,
-    borderRadius: BORDER_RADIUS.MEDIUM,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  postsContainer: {
-    flex: 1,
-    marginTop: SPACING.MEDIUM,
-  },
-  postsTitle: {
-    fontSize: FONT_SIZE.LARGE,
-    fontWeight: 'bold',
-    color: COLORS.DARK_TEXT,
-    marginHorizontal: SPACING.MEDIUM,
-    marginBottom: SPACING.SMALL,
+    padding: SPACING.LARGE,
   },
 });
 
-export default ProfileScreen;
+export default ProfileScreen; 

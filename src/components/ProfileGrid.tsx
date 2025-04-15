@@ -7,6 +7,8 @@ import {
   FlatList,
   Dimensions,
   Text,
+  ListRenderItem,
+  RefreshControlProps,
 } from 'react-native';
 import { COLORS, SPACING, BORDER_RADIUS } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -15,18 +17,27 @@ const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 3;
 const ITEM_SIZE = (width - (SPACING.MEDIUM * 2) - (SPACING.TINY * (COLUMN_COUNT - 1))) / COLUMN_COUNT;
 
+interface Post {
+  id: string | number;
+  imageUrl: string;
+  type: 'image' | 'video';
+  imageCount?: number;
+}
+
+interface ProfileGridProps {
+  posts?: Post[];
+  onPressPost?: (post: Post) => void;
+  onPressAdd?: () => void;
+  isOwner?: boolean;
+  loading?: boolean;
+  refresh?: boolean;
+  onRefresh?: () => void;
+}
+
 /**
  * ProfileGrid component for displaying a grid of posts (images, videos)
- * 
- * @param {array} posts - Array of post objects
- * @param {function} onPressPost - Function to call when a post is pressed
- * @param {function} onPressAdd - Function to call when the add button is pressed
- * @param {boolean} isOwner - Whether the current user owns this profile
- * @param {boolean} loading - Whether posts are loading
- * @param {boolean} refresh - Whether to show pull-to-refresh
- * @param {function} onRefresh - Function to call when grid is pulled to refresh
  */
-const ProfileGrid = ({
+const ProfileGrid: React.FC<ProfileGridProps> = ({
   posts = [],
   onPressPost,
   onPressAdd,
@@ -36,7 +47,7 @@ const ProfileGrid = ({
   onRefresh,
 }) => {
   // Render a post grid item
-  const renderItem = ({ item, index }) => {
+  const renderItem: ListRenderItem<Post> = ({ item }) => {
     return (
       <TouchableOpacity
         style={styles.gridItem}
@@ -57,7 +68,7 @@ const ProfileGrid = ({
         )}
         
         {/* Show multi-image indicator if post has multiple images */}
-        {item.type === 'image' && item.imageCount > 1 && (
+        {item.type === 'image' && item.imageCount && item.imageCount > 1 && (
           <View style={styles.multiImageIndicator}>
             <Ionicons name="images-outline" size={18} color={COLORS.WHITE} />
           </View>
@@ -201,4 +212,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileGrid;
+export default ProfileGrid; 

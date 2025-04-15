@@ -3,22 +3,29 @@ import {
   TouchableOpacity, 
   Text, 
   StyleSheet, 
-  ActivityIndicator 
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
+  TouchableOpacityProps
 } from 'react-native';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../styles/theme';
 
+type ButtonType = 'primary' | 'secondary' | 'outline' | 'link';
+
+interface ButtonProps extends TouchableOpacityProps {
+  title: string;
+  onPress: () => void;
+  type?: ButtonType;
+  loading?: boolean;
+  disabled?: boolean;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
+}
+
 /**
  * Custom Button component for consistent UI across the app
- * 
- * @param {string} title - Button text
- * @param {function} onPress - Function to call when button is pressed
- * @param {string} type - Button type (primary, secondary, outline, link)
- * @param {boolean} loading - Whether to show loading indicator
- * @param {boolean} disabled - Whether button is disabled
- * @param {object} style - Additional styles for the button container
- * @param {object} textStyle - Additional styles for the button text
  */
-const Button = ({
+const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
   type = 'primary',
@@ -26,9 +33,10 @@ const Button = ({
   disabled = false,
   style,
   textStyle,
+  ...props
 }) => {
   // Determine button style based on type
-  const getButtonStyle = () => {
+  const getButtonStyle = (): ViewStyle => {
     switch (type) {
       case 'primary':
         return styles.primary;
@@ -44,7 +52,7 @@ const Button = ({
   };
 
   // Determine text style based on type
-  const getTextStyle = () => {
+  const getTextStyle = (): TextStyle => {
     switch (type) {
       case 'primary':
         return styles.primaryText;
@@ -70,6 +78,7 @@ const Button = ({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.7}
+      {...props}
     >
       {loading ? (
         <ActivityIndicator
@@ -134,4 +143,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Button;
+export default Button; 

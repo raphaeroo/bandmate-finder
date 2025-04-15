@@ -5,19 +5,46 @@ import {
   StyleSheet,
   Image,
   TouchableWithoutFeedback,
+  ViewStyle,
+  TextStyle,
+  ImageSourcePropType,
 } from 'react-native';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../styles/theme';
 
+interface Sender {
+  id: string;
+  name: string;
+  profileImage?: string;
+}
+
+interface Attachment {
+  id: string;
+  url: string;
+  type: string;
+}
+
+interface Message {
+  id: string;
+  text?: string;
+  timestamp: string;
+  sender: Sender;
+  attachments?: Attachment[];
+}
+
+type MessageStatus = 'sent' | 'delivered' | 'read';
+
+interface ChatMessageProps {
+  message: Message;
+  isOwn?: boolean;
+  showAvatar?: boolean;
+  onLongPress?: () => void;
+  status?: MessageStatus;
+}
+
 /**
  * ChatMessage component for displaying messages in chat
- * 
- * @param {object} message - The message data
- * @param {boolean} isOwn - Whether the message is sent by the current user
- * @param {boolean} showAvatar - Whether to show the avatar
- * @param {function} onLongPress - Function to call when message is long pressed
- * @param {string} status - Message status (sent, delivered, read)
  */
-const ChatMessage = ({
+const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   isOwn = false,
   showAvatar = true,
@@ -27,12 +54,12 @@ const ChatMessage = ({
   const {
     text,
     timestamp,
-    sender = {},
+    sender,
     attachments = [],
   } = message;
 
   // Format timestamp for display
-  const formatTime = (timestamp) => {
+  const formatTime = (timestamp: string): string => {
     if (!timestamp) return '';
     
     const date = new Date(timestamp);
@@ -40,17 +67,17 @@ const ChatMessage = ({
   };
 
   // Status indicator
-  const renderStatus = () => {
+  const renderStatus = (): React.ReactNode => {
     if (!isOwn) return null;
     
     let statusIcon = '✓';
-    let statusColor = COLORS.GRAY;
+    let statusColor: string = COLORS.GRAY;
     
     if (status === 'delivered') {
       statusIcon = '✓✓';
     } else if (status === 'read') {
       statusIcon = '✓✓';
-      statusColor = COLORS.ACCENT;
+      statusColor = COLORS.ACCENT as string;
     }
     
     return (
@@ -61,7 +88,7 @@ const ChatMessage = ({
   };
 
   // Render media attachments
-  const renderAttachments = () => {
+  const renderAttachments = (): React.ReactNode => {
     if (!attachments || attachments.length === 0) return null;
     
     return (
@@ -181,4 +208,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatMessage;
+export default ChatMessage; 

@@ -2,6 +2,14 @@
  * Theme configuration for BandMate Finder app
  */
 
+interface ShadowStyle {
+  shadowColor: string;
+  shadowOffset: { width: number; height: number };
+  shadowOpacity: number;
+  shadowRadius: number;
+  elevation: number;
+}
+
 export const COLORS = {
   PRIMARY: '#1A237E', // Dark blue for a professional look
   SECONDARY: '#EEEEEE', // Light grey for backgrounds and subtle elements
@@ -17,7 +25,7 @@ export const COLORS = {
   WARNING: '#FFC107',
   INFO: '#2196F3',
   TRANSPARENT: 'transparent',
-};
+} as const;
 
 export const FONT_SIZE = {
   TINY: 10,
@@ -27,7 +35,7 @@ export const FONT_SIZE = {
   LARGE: 18,
   EXTRA_LARGE: 24,
   HUGE: 32,
-};
+} as const;
 
 export const SPACING = {
   TINY: 4,
@@ -36,16 +44,16 @@ export const SPACING = {
   LARGE: 24,
   EXTRA_LARGE: 32,
   HUGE: 48,
-};
+} as const;
 
 export const BORDER_RADIUS = {
   SMALL: 4,
   MEDIUM: 8,
   LARGE: 16,
   ROUND: 999,
-};
+} as const;
 
-export const SHADOWS = {
+export const SHADOWS: Record<string, ShadowStyle> = {
   SMALL: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -75,4 +83,4 @@ export default {
   SPACING,
   BORDER_RADIUS,
   SHADOWS,
-};
+}; 

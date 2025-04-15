@@ -14,8 +14,12 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import Header from '../../components/Header';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/MainNavigator';
 
-const ForgotPasswordScreen = ({ navigation }) => {
+type ForgotPasswordScreenProps = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
+
+const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -41,7 +45,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         setResetSent(true);
         setLoading(false);
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to send reset email');
       setLoading(false);
     }
@@ -170,4 +174,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ForgotPasswordScreen;
+export default ForgotPasswordScreen; 

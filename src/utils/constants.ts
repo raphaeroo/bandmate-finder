@@ -2,14 +2,25 @@
  * Constants for the BandMate Finder app
  */
 
+// Types
+export interface Option {
+  id: string;
+  name: string;
+}
+
+export interface SearchRadiusOption {
+  value: number;
+  label: string;
+}
+
 // User types
 export const USER_TYPES = {
   MUSICIAN: 'musician',
   BAND: 'band',
-};
+} as const;
 
 // Instruments list
-export const INSTRUMENTS = [
+export const INSTRUMENTS: Option[] = [
   { id: 'guitar', name: 'Guitar' },
   { id: 'bass', name: 'Bass' },
   { id: 'drums', name: 'Drums' },
@@ -30,7 +41,7 @@ export const INSTRUMENTS = [
 ];
 
 // Music genres
-export const GENRES = [
+export const GENRES: Option[] = [
   { id: 'rock', name: 'Rock' },
   { id: 'pop', name: 'Pop' },
   { id: 'jazz', name: 'Jazz' },
@@ -55,7 +66,7 @@ export const GENRES = [
 ];
 
 // Experience levels
-export const EXPERIENCE_LEVELS = [
+export const EXPERIENCE_LEVELS: Option[] = [
   { id: 'beginner', name: 'Beginner' },
   { id: 'intermediate', name: 'Intermediate' },
   { id: 'advanced', name: 'Advanced' },
@@ -67,10 +78,10 @@ export const AVAILABILITY_STATUS = {
   AVAILABLE: 'available',
   NOT_AVAILABLE: 'not_available',
   OPEN_TO_OFFERS: 'open_to_offers',
-};
+} as const;
 
 // Search radius options (in kilometers)
-export const SEARCH_RADIUS_OPTIONS = [
+export const SEARCH_RADIUS_OPTIONS: SearchRadiusOption[] = [
   { value: 5, label: '5 km' },
   { value: 10, label: '10 km' },
   { value: 25, label: '25 km' },
@@ -80,16 +91,16 @@ export const SEARCH_RADIUS_OPTIONS = [
 ];
 
 // Maximum number of bands a musician can be part of
-export const MAX_BANDS_PER_MUSICIAN = 5;
+export const MAX_BANDS_PER_MUSICIAN: number = 5;
 
 // Maximum post description length
-export const MAX_POST_DESCRIPTION_LENGTH = 500;
+export const MAX_POST_DESCRIPTION_LENGTH: number = 500;
 
 // Maximum number of photos per post
-export const MAX_PHOTOS_PER_POST = 10;
+export const MAX_PHOTOS_PER_POST: number = 10;
 
 // Maximum chat message length
-export const MAX_CHAT_MESSAGE_LENGTH = 1000;
+export const MAX_CHAT_MESSAGE_LENGTH: number = 1000;
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -99,7 +110,7 @@ export const STORAGE_KEYS = {
   SEARCH_HISTORY: 'search_history',
   CHAT_HISTORY: 'chat_history',
   APP_SETTINGS: 'app_settings',
-};
+} as const;
 
 export default {
   USER_TYPES,
@@ -113,4 +124,4 @@ export default {
   MAX_PHOTOS_PER_POST,
   MAX_CHAT_MESSAGE_LENGTH,
   STORAGE_KEYS,
-};
+}; 

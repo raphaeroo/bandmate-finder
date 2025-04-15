@@ -16,8 +16,12 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/MainNavigator';
 
-const LoginScreen = ({ navigation }) => {
+type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +42,7 @@ const LoginScreen = ({ navigation }) => {
     try {
       await login(email, password);
       // Navigation will be handled by the main navigator when auth state changes
-    } catch (err) {
+    } catch (err: any) {
       Alert.alert('Login Failed', err.message || 'Please check your credentials and try again');
     } finally {
       setLoading(false);
@@ -189,4 +193,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default LoginScreen; 

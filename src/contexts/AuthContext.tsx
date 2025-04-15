@@ -1,18 +1,59 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../utils/constants';
 
-// Create the context
-export const AuthContext = createContext();
+// Define types
+export interface Location {
+  latitude: number;
+  longitude: number;
+  city: string;
+  state: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  type: 'musician' | 'band';
+  instrument?: string;
+  genres?: string[];
+  location?: Location;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  register: (userData: Partial<User>) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
+  updateProfile: (updatedData: Partial<User>) => Promise<User>;
+  clearError: () => void;
+}
+
+// Create the context with default value
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Custom hook to use the auth context
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 // Provider component that wraps the app
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load user data from AsyncStorage when the app starts
   useEffect(() => {
@@ -37,15 +78,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Register a new user
-  const register = async (userData) => {
+  const register = async (userData: Partial<User>): Promise<User> => {
     try {
       setLoading(true);
       // TODO: API call to register user
       
       // Mock implementation for now
       const token = 'mock-token-' + Date.now();
-      const newUser = {
+      const newUser: User = {
         id: Date.now().toString(),
+        email: userData.email || '',
+        name: userData.name || '',
+        type: userData.type || 'musician',
         ...userData,
         createdAt: new Date().toISOString(),
       };
@@ -66,14 +110,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Login user
-  const login = async (email, password) => {
+  const login = async (email: string, password: string): Promise<User> => {
     try {
       setLoading(true);
       // TODO: API call to login user
       
       // Mock implementation for now
       const token = 'mock-token-' + Date.now();
-      const mockUser = {
+      const mockUser: User = {
         id: Date.now().toString(),
         email,
         name: 'Test User',
@@ -104,7 +148,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout user
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       setLoading(true);
       // TODO: API call to logout if needed
@@ -123,13 +167,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Update user profile
-  const updateProfile = async (updatedData) => {
+  const updateProfile = async (updatedData: Partial<User>): Promise<User> => {
     try {
       setLoading(true);
       // TODO: API call to update user profile
       
+      if (!user) {
+        throw new Error('No user logged in');
+      }
+
       // Mock implementation for now
-      const updatedUser = {
+      const updatedUser: User = {
         ...user,
         ...updatedData,
         updatedAt: new Date().toISOString(),
@@ -150,10 +198,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Clear any errors
-  const clearError = () => setError(null);
+  const clearError = (): void => setError(null);
 
   // Context value
-  const value = {
+  const value: AuthContextType = {
     user,
     loading,
     error,
@@ -165,4 +213,4 @@ export const AuthProvider = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}; 

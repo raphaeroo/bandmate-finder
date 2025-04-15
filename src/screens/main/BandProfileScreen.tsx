@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../../styles/theme';
@@ -17,80 +17,127 @@ import Button from '../../components/Button';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { USER_TYPES } from '../../utils/constants';
 import { useAuth } from '../../contexts/AuthContext';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../../navigation/MainNavigator';
 
-// Mock data for musician profile
-const mockMusicianProfile = {
-  id: '101',
-  name: 'Jane Smith',
-  type: USER_TYPES.MUSICIAN,
+type BandProfileScreenProps = NativeStackScreenProps<HomeStackParamList, 'BandProfile'>;
+
+interface Location {
+  city: string;
+  state: string;
+}
+
+interface Genre {
+  id: string;
+  name: string;
+}
+
+interface Instrument {
+  id: string;
+  name: string;
+}
+
+interface BandMember {
+  id: string;
+  name: string;
+  role: string;
+  instrument: string;
+  profileImage: string;
+}
+
+interface Post {
+  id: string | number;
+  imageUrl: string;
+  type: 'image' | 'video';
+  imageCount?: number;
+}
+
+interface BandProfile {
+  id: string;
+  name: string;
+  type: typeof USER_TYPES.BAND;
+  profileImage: string;
+  coverImage: string;
+  bio: string;
+  location: Location;
+  genres: Genre[];
+  members: BandMember[];
+  openPositions: Instrument[];
+  isAvailable: boolean;
+  followers: number;
+  following: number;
+}
+
+// Mock data for band profile
+const mockBandProfile: BandProfile = {
+  id: '201',
+  name: 'Rock Legends',
+  type: USER_TYPES.BAND,
   profileImage: 'https://via.placeholder.com/150',
   coverImage: 'https://via.placeholder.com/600x200',
-  bio: 'Professional saxophonist with over 10 years of experience. Jazz enthusiast with a background in classical music. Available for studio sessions and live performances.',
-  location: { city: 'Seattle', state: 'WA' },
+  bio: 'High-energy rock band looking for a lead guitarist. We play regular gigs in the New York area and are working on our first album.',
+  location: { city: 'New York', state: 'NY' },
   genres: [
-    { id: 'jazz', name: 'Jazz' },
-    { id: 'classical', name: 'Classical' },
-    { id: 'soul', name: 'Soul' },
+    { id: 'rock', name: 'Rock' },
+    { id: 'alternative', name: 'Alternative' },
   ],
-  instruments: [
-    { id: 'saxophone', name: 'Saxophone' },
-    { id: 'clarinet', name: 'Clarinet' },
+  members: [
+    {
+      id: '1',
+      name: 'Jane Smith',
+      role: 'Vocals',
+      instrument: 'Vocals',
+      profileImage: 'https://via.placeholder.com/50',
+    },
+    {
+      id: '2',
+      name: 'Mike Johnson',
+      role: 'Drummer',
+      instrument: 'Drums',
+      profileImage: 'https://via.placeholder.com/50',
+    },
+    {
+      id: '3',
+      name: 'Sarah Lee',
+      role: 'Bassist',
+      instrument: 'Bass',
+      profileImage: 'https://via.placeholder.com/50',
+    },
   ],
-  bands: [
-    { id: '201', name: 'Seattle Jazz Collective', role: 'Saxophonist' },
+  openPositions: [
+    { id: 'guitar', name: 'Lead Guitarist' },
   ],
-  experienceLevel: 'Professional',
   isAvailable: true,
-  followers: 215,
-  following: 98,
+  followers: 256,
+  following: 42,
 };
 
 // Mock posts data
-const mockPosts = [
+const mockPosts: Post[] = [
   {
     id: '1',
     imageUrl: 'https://via.placeholder.com/300',
     type: 'image',
-    caption: 'Rehearsal day',
-    likes: 42,
-    comments: 7,
-    createdAt: '2023-06-15T14:30:00Z',
+    imageCount: 3,
   },
   {
     id: '2',
     imageUrl: 'https://via.placeholder.com/300',
     type: 'video',
-    caption: 'Live jazz performance',
-    likes: 78,
-    comments: 12,
-    createdAt: '2023-06-10T20:15:00Z',
   },
   {
     id: '3',
     imageUrl: 'https://via.placeholder.com/300',
     type: 'image',
     imageCount: 3,
-    caption: 'New sax arrived!',
-    likes: 63,
-    comments: 9,
-    createdAt: '2023-06-05T12:00:00Z',
-  },
-  {
-    id: '4',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
-    caption: 'Studio session',
-    likes: 51,
-    comments: 5,
-    createdAt: '2023-05-30T16:45:00Z',
   },
 ];
 
-const MusicianProfileScreen = ({ route, navigation }) => {
-  const { musicianId } = route.params;
+const BandProfileScreen: React.FC<BandProfileScreenProps> = ({ route, navigation }) => {
+  const { bandId } = route.params;
   const { user } = useAuth();
-  const [profileData, setProfileData] = useState(null);
-  const [posts, setPosts] = useState([]);
+  const [profileData, setProfileData] = useState<BandProfile | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [following, setFollowing] = useState(false);
@@ -106,7 +153,7 @@ const MusicianProfileScreen = ({ route, navigation }) => {
       // In a real app, this would be an API call
       // For now, we'll use mock data
       setTimeout(() => {
-        setProfileData(mockMusicianProfile);
+        setProfileData(mockBandProfile);
         setPosts(mockPosts);
         setFollowing(Math.random() > 0.5); // Randomly set following status
         setLoading(false);
@@ -124,42 +171,37 @@ const MusicianProfileScreen = ({ route, navigation }) => {
   };
 
   const handleFollow = () => {
+    if (!profileData) return;
+    
     // In a real app, this would be an API call
     setFollowing(!following);
-    
-    // Show feedback
-    Alert.alert(
-      following ? 'Unfollowed' : 'Followed',
-      following 
-        ? `You no longer follow ${profileData.name}` 
-        : `You are now following ${profileData.name}`
-    );
   };
 
   const handleMessage = () => {
+    if (!profileData) return;
+    
     setChatLoading(true);
     
     // In a real app, this would check if a chat exists or create one
     setTimeout(() => {
       setChatLoading(false);
       navigation.navigate('Chat', { 
-        chatId: `chat_${musicianId}`,
+        chatId: `chat_${bandId}`,
         user: {
-          id: musicianId,
+          id: bandId,
           name: profileData.name,
-          type: USER_TYPES.MUSICIAN,
+          type: USER_TYPES.BAND,
           profileImage: profileData.profileImage,
-          instrument: profileData.instruments[0].name,
         }
       });
     }, 1000);
   };
 
-  const handleBandPress = (band) => {
-    navigation.navigate('BandProfile', { bandId: band.id });
+  const handleMemberPress = (member: BandMember) => {
+    navigation.navigate('MusicianProfile', { musicianId: member.id });
   };
 
-  const handlePostPress = (post) => {
+  const handlePostPress = (post: Post) => {
     // In a real app, navigate to post detail screen
     console.log('Post pressed:', post);
   };
@@ -200,13 +242,6 @@ const MusicianProfileScreen = ({ route, navigation }) => {
             {profileData.location.city}, {profileData.location.state}
           </Text>
           
-          {/* Experience Level */}
-          <Text style={styles.experienceLevel}>
-            <Ionicons name="star-outline" size={16} color={COLORS.GRAY} />
-            {' '}
-            {profileData.experienceLevel}
-          </Text>
-          
           {/* Genres */}
           <View style={styles.tagsContainer}>
             {profileData.genres.map((genre) => (
@@ -216,42 +251,45 @@ const MusicianProfileScreen = ({ route, navigation }) => {
             ))}
           </View>
           
-          {/* Instruments */}
-          <View style={styles.instrumentsContainer}>
-            <Text style={styles.sectionTitle}>Instruments:</Text>
-            <View style={styles.tagsContainer}>
-              {profileData.instruments.map((instrument) => (
-                <View key={instrument.id} style={styles.tagChip}>
-                  <Text style={styles.tagText}>{instrument.name}</Text>
-                </View>
+          {/* Members */}
+          <View style={styles.membersContainer}>
+            <Text style={styles.sectionTitle}>Band Members:</Text>
+            <View style={styles.membersList}>
+              {profileData.members.map((member) => (
+                <TouchableOpacity
+                  key={member.id}
+                  style={styles.memberItem}
+                  onPress={() => handleMemberPress(member)}
+                >
+                  <Image
+                    source={{ uri: member.profileImage }}
+                    style={styles.memberImage}
+                  />
+                  <View style={styles.memberInfo}>
+                    <Text style={styles.memberName}>{member.name}</Text>
+                    <Text style={styles.memberRole}>{member.role}</Text>
+                  </View>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
           
-          {/* Bands */}
-          {profileData.bands && profileData.bands.length > 0 && (
-            <View style={styles.bandsContainer}>
-              <Text style={styles.sectionTitle}>Bands:</Text>
-              <View style={styles.bandsList}>
-                {profileData.bands.map((band) => (
-                  <TouchableOpacity
-                    key={band.id}
-                    style={styles.bandItem}
-                    onPress={() => handleBandPress(band)}
-                  >
-                    <Text style={styles.bandName}>{band.name}</Text>
-                    <Text style={styles.bandRole}>{band.role}</Text>
-                  </TouchableOpacity>
+          {/* Open Positions */}
+          {profileData.openPositions.length > 0 && (
+            <View style={styles.positionsContainer}>
+              <Text style={styles.sectionTitle}>Open Positions:</Text>
+              <View style={styles.tagsContainer}>
+                {profileData.openPositions.map((position) => (
+                  <View key={position.id} style={styles.tagChip}>
+                    <Text style={styles.tagText}>{position.name}</Text>
+                  </View>
                 ))}
               </View>
             </View>
           )}
           
           {/* Bio */}
-          <View style={styles.bioContainer}>
-            <Text style={styles.sectionTitle}>Bio:</Text>
-            <Text style={styles.bioText}>{profileData.bio}</Text>
-          </View>
+          <Text style={styles.bio}>{profileData.bio}</Text>
           
           {/* Stats */}
           <View style={styles.statsContainer}>
@@ -263,27 +301,22 @@ const MusicianProfileScreen = ({ route, navigation }) => {
               <Text style={styles.statValue}>{profileData.following}</Text>
               <Text style={styles.statLabel}>Following</Text>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{posts.length}</Text>
-              <Text style={styles.statLabel}>Posts</Text>
-            </View>
           </View>
           
-          {/* Action Buttons (if not the current user) */}
-          {user?.id !== profileData.id && (
-            <View style={styles.actionButtonsContainer}>
+          {/* Action Buttons */}
+          {user?.id !== bandId && (
+            <View style={styles.actionButtons}>
               <Button
                 title={following ? 'Following' : 'Follow'}
-                type={following ? 'outline' : 'primary'}
                 onPress={handleFollow}
-                style={styles.followButton}
+                type={following ? 'outline' : 'primary'}
+                style={styles.actionButton}
               />
               <Button
                 title="Message"
-                type="secondary"
                 onPress={handleMessage}
                 loading={chatLoading}
-                style={styles.messageButton}
+                style={styles.actionButton}
               />
             </View>
           )}
@@ -292,37 +325,42 @@ const MusicianProfileScreen = ({ route, navigation }) => {
     );
   };
 
-  if (loading && !profileData) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <Header title="Musician Profile" onBackPress={() => navigation.goBack()} />
+  const renderPosts = () => {
+    if (loading) {
+      return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.PRIMARY} />
         </View>
-      </SafeAreaView>
+      );
+    }
+
+    return (
+      <ProfileGrid
+        posts={posts}
+        onPressPost={handlePostPress}
+      />
     );
-  }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="Musician Profile" onBackPress={() => navigation.goBack()} />
-      
+      <Header
+        title="Band Profile"
+        onBackPress={() => navigation.goBack()}
+      />
       <ScrollView
         style={styles.container}
-        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.PRIMARY]}
+            tintColor={COLORS.PRIMARY}
+          />
+        }
       >
         {renderProfileHeader()}
-        
-        <View style={styles.postsContainer}>
-          <Text style={styles.postsTitle}>Posts</Text>
-          <ProfileGrid
-            posts={posts}
-            onPressPost={handlePostPress}
-            isOwner={false}
-            refresh={refreshing}
-            onRefresh={handleRefresh}
-          />
-        </View>
+        {renderPosts()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -336,46 +374,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   profileHeaderContainer: {
-    backgroundColor: COLORS.WHITE,
-    ...SHADOWS.MEDIUM,
-    borderRadius: BORDER_RADIUS.MEDIUM,
-    margin: SPACING.MEDIUM,
-    overflow: 'hidden',
+    position: 'relative',
+    marginBottom: SPACING.MEDIUM,
   },
   coverImage: {
     width: '100%',
-    height: 150,
+    height: 200,
+    resizeMode: 'cover',
   },
   profileImageContainer: {
     position: 'absolute',
-    top: 100,
+    bottom: -50,
     left: SPACING.MEDIUM,
-    borderRadius: 75,
-    borderWidth: 4,
-    borderColor: COLORS.WHITE,
+    borderRadius: BORDER_RADIUS.LARGE,
     ...SHADOWS.MEDIUM,
   },
   profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: BORDER_RADIUS.LARGE,
+    borderWidth: 3,
+    borderColor: COLORS.WHITE,
   },
   profileInfoContainer: {
-    marginTop: 60,
     padding: SPACING.MEDIUM,
+    paddingTop: 60,
   },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: SPACING.TINY,
   },
   name: {
-    fontSize: FONT_SIZE.EXTRA_LARGE,
+    fontSize: FONT_SIZE.LARGE,
     fontWeight: 'bold',
     color: COLORS.DARK_TEXT,
     marginRight: SPACING.SMALL,
@@ -383,7 +415,7 @@ const styles = StyleSheet.create({
   availabilityBadge: {
     backgroundColor: COLORS.SUCCESS,
     paddingHorizontal: SPACING.SMALL,
-    paddingVertical: 2,
+    paddingVertical: SPACING.TINY,
     borderRadius: BORDER_RADIUS.SMALL,
   },
   availabilityText: {
@@ -392,115 +424,102 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   location: {
-    fontSize: FONT_SIZE.MEDIUM,
+    fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
-    marginTop: SPACING.TINY,
-  },
-  experienceLevel: {
-    fontSize: FONT_SIZE.MEDIUM,
-    color: COLORS.GRAY,
-    marginTop: SPACING.TINY,
+    marginBottom: SPACING.SMALL,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: SPACING.SMALL,
+    marginBottom: SPACING.MEDIUM,
   },
   tagChip: {
-    backgroundColor: COLORS.SECONDARY,
+    backgroundColor: COLORS.LIGHT_GRAY,
     paddingHorizontal: SPACING.SMALL,
     paddingVertical: SPACING.TINY,
-    borderRadius: BORDER_RADIUS.ROUND,
-    marginRight: SPACING.SMALL,
-    marginBottom: SPACING.SMALL,
+    borderRadius: BORDER_RADIUS.SMALL,
+    marginRight: SPACING.TINY,
+    marginBottom: SPACING.TINY,
   },
   tagText: {
     fontSize: FONT_SIZE.SMALL,
     color: COLORS.DARK_TEXT,
   },
-  instrumentsContainer: {
-    marginTop: SPACING.MEDIUM,
+  sectionTitle: {
+    fontSize: FONT_SIZE.MEDIUM,
+    fontWeight: 'bold',
+    color: COLORS.DARK_TEXT,
+    marginBottom: SPACING.SMALL,
   },
-  bandsContainer: {
-    marginTop: SPACING.MEDIUM,
+  membersContainer: {
+    marginBottom: SPACING.MEDIUM,
   },
-  bandsList: {
+  membersList: {
     marginTop: SPACING.SMALL,
   },
-  bandItem: {
+  memberItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.SMALL,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.LIGHT_GRAY,
+    alignItems: 'center',
+    marginBottom: SPACING.SMALL,
   },
-  bandName: {
+  memberImage: {
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.MEDIUM,
+    marginRight: SPACING.SMALL,
+  },
+  memberInfo: {
+    flex: 1,
+  },
+  memberName: {
     fontSize: FONT_SIZE.REGULAR,
-    color: COLORS.DARK_TEXT,
-    fontWeight: '500',
-  },
-  bandRole: {
-    fontSize: FONT_SIZE.SMALL,
-    color: COLORS.GRAY,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZE.REGULAR,
-    fontWeight: 'bold',
     color: COLORS.DARK_TEXT,
     marginBottom: SPACING.TINY,
   },
-  bioContainer: {
-    marginTop: SPACING.MEDIUM,
+  memberRole: {
+    fontSize: FONT_SIZE.SMALL,
+    color: COLORS.GRAY,
   },
-  bioText: {
-    fontSize: FONT_SIZE.MEDIUM,
+  positionsContainer: {
+    marginBottom: SPACING.MEDIUM,
+  },
+  bio: {
+    fontSize: FONT_SIZE.REGULAR,
     color: COLORS.DARK_TEXT,
+    marginBottom: SPACING.MEDIUM,
     lineHeight: 22,
   },
   statsContainer: {
     flexDirection: 'row',
-    marginTop: SPACING.LARGE,
-    padding: SPACING.MEDIUM,
-    backgroundColor: COLORS.SECONDARY,
-    borderRadius: BORDER_RADIUS.MEDIUM,
+    marginBottom: SPACING.MEDIUM,
   },
   statItem: {
-    flex: 1,
-    alignItems: 'center',
+    marginRight: SPACING.LARGE,
   },
   statValue: {
-    fontSize: FONT_SIZE.LARGE,
+    fontSize: FONT_SIZE.MEDIUM,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: COLORS.DARK_TEXT,
+    marginBottom: SPACING.TINY,
   },
   statLabel: {
     fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
-    marginTop: SPACING.TINY,
   },
-  actionButtonsContainer: {
+  actionButtons: {
     flexDirection: 'row',
-    marginTop: SPACING.LARGE,
+    justifyContent: 'space-between',
   },
-  followButton: {
+  actionButton: {
     flex: 1,
-    marginRight: SPACING.SMALL,
+    marginHorizontal: SPACING.TINY,
   },
-  messageButton: {
+  loadingContainer: {
     flex: 1,
-    marginLeft: SPACING.SMALL,
-  },
-  postsContainer: {
-    flex: 1,
-    marginTop: SPACING.MEDIUM,
-  },
-  postsTitle: {
-    fontSize: FONT_SIZE.LARGE,
-    fontWeight: 'bold',
-    color: COLORS.DARK_TEXT,
-    marginHorizontal: SPACING.MEDIUM,
-    marginBottom: SPACING.SMALL,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.LARGE,
   },
 });
 
-export default MusicianProfileScreen;
+export default BandProfileScreen; 

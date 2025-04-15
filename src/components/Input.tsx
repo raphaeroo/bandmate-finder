@@ -5,32 +5,38 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  TextInputProps,
+  KeyboardTypeOptions,
 } from 'react-native';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+interface InputProps extends Omit<TextInputProps, 'style'> {
+  label?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  secureTextEntry?: boolean;
+  error?: string;
+  multiline?: boolean;
+  keyboardType?: KeyboardTypeOptions;
+  maxLength?: number;
+  onBlur?: () => void;
+  onFocus?: () => void;
+  style?: ViewStyle;
+  inputStyle?: TextStyle;
+  labelStyle?: TextStyle;
+  required?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}
+
 /**
  * Custom Input component for consistent UI across the app
- * 
- * @param {string} label - Input field label
- * @param {string} value - Input field value
- * @param {function} onChangeText - Function to call when text changes
- * @param {string} placeholder - Placeholder text
- * @param {boolean} secureTextEntry - Whether to hide text (for passwords)
- * @param {string} error - Error message to display
- * @param {boolean} multiline - Whether input is multiline
- * @param {string} keyboardType - Keyboard type
- * @param {number} maxLength - Maximum number of characters
- * @param {function} onBlur - Function to call when input loses focus
- * @param {function} onFocus - Function to call when input gains focus
- * @param {object} style - Additional styles for the input container
- * @param {object} inputStyle - Additional styles for the input field
- * @param {object} labelStyle - Additional styles for the label
- * @param {boolean} required - Whether field is required
- * @param {JSX} leftIcon - Custom icon to display on the left
- * @param {JSX} rightIcon - Custom icon to display on the right
  */
-const Input = ({
+const Input: React.FC<InputProps> = ({
   label,
   value,
   onChangeText,
@@ -48,18 +54,19 @@ const Input = ({
   required = false,
   leftIcon,
   rightIcon,
+  ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
-  const handleFocus = (e) => {
+  const handleFocus = () => {
     setIsFocused(true);
-    if (onFocus) onFocus(e);
+    if (onFocus) onFocus();
   };
 
-  const handleBlur = (e) => {
+  const handleBlur = () => {
     setIsFocused(false);
-    if (onBlur) onBlur(e);
+    if (onBlur) onBlur();
   };
 
   const toggleSecureEntry = () => {
@@ -76,18 +83,18 @@ const Input = ({
       <View
         style={[
           styles.inputContainer,
-          isFocused && styles.focused,
-          error && styles.error,
-          multiline && styles.multiline,
+          isFocused ? styles.focused : null,
+          error ? styles.error : null,
+          multiline ? styles.multiline : null,
         ]}
       >
         {leftIcon && <View style={styles.leftIconContainer}>{leftIcon}</View>}
         <TextInput
           style={[
             styles.input,
-            leftIcon && styles.inputWithLeftIcon,
-            (rightIcon || secureTextEntry) && styles.inputWithRightIcon,
-            multiline && styles.multilineInput,
+            leftIcon ? styles.inputWithLeftIcon : null,
+            (rightIcon || secureTextEntry) ? styles.inputWithRightIcon : null,
+            multiline ? styles.multilineInput : null,
             inputStyle,
           ]}
           value={value}
@@ -101,6 +108,7 @@ const Input = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           textAlignVertical={multiline ? 'top' : 'center'}
+          {...props}
         />
         {secureTextEntry && (
           <TouchableOpacity
@@ -188,4 +196,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Input;
+export default Input; 

@@ -6,6 +6,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  ViewStyle,
+  TextStyle,
+  ImageSourcePropType,
 } from 'react-native';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -13,15 +16,56 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
 
+interface Location {
+  city?: string;
+  state?: string;
+  distance?: number;
+}
+
+interface Genre {
+  id: string;
+  name: string;
+}
+
+interface Instrument {
+  id: string;
+  name: string;
+}
+
+interface OpenPosition {
+  id: string;
+  name: string;
+}
+
+interface CardItem {
+  id: string;
+  name: string;
+  profileImage?: string;
+  genres?: Genre[];
+  location?: Location;
+  isAvailable?: boolean;
+  instruments?: Instrument[];
+  bandName?: string;
+  memberCount?: number;
+  openPositions?: OpenPosition[];
+}
+
+interface CardProps {
+  item: CardItem;
+  onPress: () => void;
+  type?: 'musician' | 'band';
+  isSearchResult?: boolean;
+}
+
 /**
  * Card component for displaying musician or band profiles
- * 
- * @param {object} item - The profile data
- * @param {function} onPress - Function to call when card is pressed
- * @param {string} type - Card type ('musician' or 'band')
- * @param {boolean} isSearchResult - Whether card is displayed in search results
  */
-const Card = ({ item, onPress, type = 'musician', isSearchResult = false }) => {
+const Card: React.FC<CardProps> = ({ 
+  item, 
+  onPress, 
+  type = 'musician', 
+  isSearchResult = false 
+}) => {
   const {
     id,
     name,
@@ -36,7 +80,7 @@ const Card = ({ item, onPress, type = 'musician', isSearchResult = false }) => {
   } = item;
 
   // Format distance for display
-  const formatDistance = (distance) => {
+  const formatDistance = (distance: number): string => {
     if (!distance) return '';
     if (distance < 1) {
       return `${(distance * 1000).toFixed(0)} m`;

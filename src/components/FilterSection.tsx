@@ -9,17 +9,24 @@ import {
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+interface Option {
+  id: string | number;
+  name: string;
+}
+
+interface FilterSectionProps {
+  options?: Option[];
+  selectedOptions?: Option[];
+  onSelectOption?: (option: Option) => void;
+  title?: string;
+  multiSelect?: boolean;
+  collapsible?: boolean;
+}
+
 /**
  * FilterSection component for displaying and selecting filter options
- * 
- * @param {array} options - Array of filter options
- * @param {array} selectedOptions - Array of selected filter options
- * @param {function} onSelectOption - Function to call when an option is selected
- * @param {string} title - Title of the filter section
- * @param {boolean} multiSelect - Whether multiple options can be selected
- * @param {boolean} collapsible - Whether section can be collapsed
  */
-const FilterSection = ({
+const FilterSection: React.FC<FilterSectionProps> = ({
   options = [],
   selectedOptions = [],
   onSelectOption,
@@ -35,11 +42,11 @@ const FilterSection = ({
     }
   };
 
-  const isSelected = (option) => {
+  const isSelected = (option: Option): boolean => {
     return selectedOptions.some((selectedOption) => selectedOption.id === option.id);
   };
 
-  const handleSelectOption = (option) => {
+  const handleSelectOption = (option: Option) => {
     if (onSelectOption) {
       onSelectOption(option);
     }
@@ -136,4 +143,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FilterSection;
+export default FilterSection; 

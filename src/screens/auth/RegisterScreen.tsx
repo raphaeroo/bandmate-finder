@@ -17,16 +17,26 @@ import Header from '../../components/Header';
 import { useAuth } from '../../contexts/AuthContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { USER_TYPES } from '../../utils/constants';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/MainNavigator';
 
-const RegisterScreen = ({ navigation }) => {
+type RegisterScreenProps = NativeStackScreenProps<AuthStackParamList, 'Register'>;
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [step, setStep] = useState(1); // 1: Type selection, 2: Account details, 3: Profile details
-  const [userType, setUserType] = useState('');
-  const [formData, setFormData] = useState({
+  const [userType, setUserType] = useState<"musician" | "band">();
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    // Profile details will be added in step 3
   });
   const [loading, setLoading] = useState(false);
   const { register, error, clearError } = useAuth();
@@ -36,7 +46,7 @@ const RegisterScreen = ({ navigation }) => {
     clearError();
   }, []);
 
-  const updateFormData = (key, value) => {
+  const updateFormData = (key: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -86,7 +96,7 @@ const RegisterScreen = ({ navigation }) => {
       };
       await register(userData);
       // Navigation will be handled by the main navigator when auth state changes
-    } catch (err) {
+    } catch (err: any) {
       Alert.alert('Registration Failed', err.message || 'Please try again');
     } finally {
       setLoading(false);
@@ -250,9 +260,9 @@ const RegisterScreen = ({ navigation }) => {
           </>
         ) : (
           <>
+            {'\n'}- Band name
             {'\n'}- Music genres
-            {'\n'}- Band members
-            {'\n'}- Instruments you're looking for
+            {'\n'}- Looking for
             {'\n'}- Location
           </>
         )}
@@ -260,7 +270,7 @@ const RegisterScreen = ({ navigation }) => {
 
       <View style={styles.buttonContainer}>
         <Button
-          title="Create Account"
+          title="Complete Registration"
           onPress={handleContinue}
           loading={loading}
         />
@@ -283,8 +293,8 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header
-        title={`Step ${step} of 3`}
+      <Header 
+        title="Create Account" 
         onBackPress={handleGoBack}
       />
       
@@ -298,13 +308,6 @@ const RegisterScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
           {renderCurrentStep()}
-          
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -343,9 +346,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.MEDIUM,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.LIGHT_GRAY,
-    borderRadius: 8,
     marginBottom: SPACING.MEDIUM,
   },
   selectedType: {
@@ -357,10 +360,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   typeTitle: {
-    fontSize: FONT_SIZE.LARGE,
+    fontSize: FONT_SIZE.REGULAR,
     fontWeight: 'bold',
     color: COLORS.DARK_TEXT,
-    marginBottom: 2,
+    marginBottom: SPACING.TINY,
   },
   typeDescription: {
     fontSize: FONT_SIZE.SMALL,
@@ -372,30 +375,12 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: SPACING.LARGE,
   },
-  loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: SPACING.LARGE,
-  },
-  loginText: {
-    fontSize: FONT_SIZE.MEDIUM,
-    color: COLORS.DARK_TEXT,
-  },
-  loginLink: {
-    fontSize: FONT_SIZE.MEDIUM,
-    color: COLORS.PRIMARY,
-    fontWeight: 'bold',
-  },
   placeholderText: {
     fontSize: FONT_SIZE.MEDIUM,
     color: COLORS.GRAY,
-    padding: SPACING.LARGE,
-    borderWidth: 1,
-    borderColor: COLORS.LIGHT_GRAY,
-    borderRadius: 8,
-    borderStyle: 'dashed',
+    marginTop: SPACING.MEDIUM,
+    lineHeight: 24,
   },
 });
 
-export default RegisterScreen;
+export default RegisterScreen; 

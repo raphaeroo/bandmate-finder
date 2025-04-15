@@ -9,14 +9,56 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONT_SIZE, SPACING } from '../../styles/theme';
+import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../../styles/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import Card from '../../components/Card';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { USER_TYPES } from '../../utils/constants';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../../navigation/MainNavigator';
+
+type HomeScreenProps = NativeStackScreenProps<HomeStackParamList, 'HomeScreen'>;
+
+interface Genre {
+  id: string;
+  name: string;
+}
+
+interface Location {
+  city: string;
+  state: string;
+  distance: number;
+}
+
+interface Instrument {
+  id: string;
+  name: string;
+}
+
+interface Band {
+  id: string;
+  name: string;
+  profileImage: string;
+  genres: Genre[];
+  location: Location;
+  isAvailable: boolean;
+  memberCount: number;
+  openPositions: Instrument[];
+}
+
+interface Musician {
+  id: string;
+  name: string;
+  profileImage: string;
+  genres: Genre[];
+  location: Location;
+  isAvailable: boolean;
+  instruments: Instrument[];
+  bandName?: string;
+}
 
 // Mock data for demonstration purposes
-const mockBands = [
+const mockBands: Band[] = [
   {
     id: '1',
     name: 'Rock Legends',
@@ -49,7 +91,7 @@ const mockBands = [
   },
 ];
 
-const mockMusicians = [
+const mockMusicians: Musician[] = [
   {
     id: '1',
     name: 'John Doe',
@@ -81,12 +123,12 @@ const mockMusicians = [
   },
 ];
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { user } = useAuth();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<(Band | Musician)[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [viewMode, setViewMode] = useState(
+  const [viewMode, setViewMode] = useState<'bands' | 'musicians'>(
     user?.type === USER_TYPES.MUSICIAN ? 'bands' : 'musicians'
   );
 
@@ -119,7 +161,7 @@ const HomeScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  const handleCardPress = (item) => {
+  const handleCardPress = (item: Band | Musician) => {
     if (viewMode === 'bands') {
       navigation.navigate('BandProfile', { bandId: item.id });
     } else {
@@ -251,68 +293,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: SPACING.SMALL,
   },
   headerTitle: {
-    fontSize: FONT_SIZE.HUGE,
+    fontSize: FONT_SIZE.LARGE,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
-  },
-  notificationButton: {
-    padding: SPACING.SMALL,
+    color: COLORS.DARK_TEXT,
   },
   headerSubtitle: {
-    fontSize: FONT_SIZE.MEDIUM,
+    fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
-    marginTop: SPACING.TINY,
+    marginBottom: SPACING.MEDIUM,
+  },
+  notificationButton: {
+    padding: SPACING.TINY,
   },
   viewToggleContainer: {
     flexDirection: 'row',
-    marginTop: SPACING.MEDIUM,
-    backgroundColor: COLORS.SECONDARY,
-    borderRadius: 25,
-    padding: 4,
+    backgroundColor: COLORS.LIGHT_GRAY,
+    borderRadius: BORDER_RADIUS.MEDIUM,
+    padding: SPACING.TINY,
   },
   viewToggleButton: {
     flex: 1,
     paddingVertical: SPACING.SMALL,
-    alignItems: 'center',
-    borderRadius: 25,
+    paddingHorizontal: SPACING.MEDIUM,
+    borderRadius: BORDER_RADIUS.SMALL,
   },
   activeViewToggleButton: {
     backgroundColor: COLORS.PRIMARY,
   },
   viewToggleText: {
+    textAlign: 'center',
     fontSize: FONT_SIZE.REGULAR,
-    fontWeight: '500',
-    color: COLORS.DARK_TEXT,
+    color: COLORS.GRAY,
   },
   activeViewToggleText: {
     color: COLORS.WHITE,
+    fontWeight: 'bold',
   },
   listContainer: {
-    paddingVertical: SPACING.SMALL,
-    flexGrow: 1,
+    padding: SPACING.MEDIUM,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.LARGE,
-    marginTop: SPACING.EXTRA_LARGE,
   },
   emptyText: {
-    marginTop: SPACING.MEDIUM,
-    fontSize: FONT_SIZE.REGULAR,
-    fontWeight: 'bold',
+    fontSize: FONT_SIZE.MEDIUM,
     color: COLORS.DARK_TEXT,
-    textAlign: 'center',
+    marginTop: SPACING.MEDIUM,
   },
   emptySubtext: {
-    marginTop: SPACING.SMALL,
     fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
-    textAlign: 'center',
+    marginTop: SPACING.TINY,
   },
 });
 
-export default HomeScreen;
+export default HomeScreen; 

@@ -6,24 +6,28 @@ import {
   TouchableOpacity,
   StatusBar,
   Platform,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { COLORS, FONT_SIZE, SPACING } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+interface HeaderProps {
+  title?: string;
+  onBackPress?: () => void;
+  onRightPress?: () => void;
+  rightIcon?: string;
+  rightText?: string;
+  transparent?: boolean;
+  light?: boolean;
+  style?: ViewStyle;
+}
+
 /**
  * Header component for consistent UI across screens
- * 
- * @param {string} title - Header title
- * @param {function} onBackPress - Function to call when back button is pressed
- * @param {function} onRightPress - Function to call when right button is pressed
- * @param {string} rightIcon - Icon name for right button
- * @param {string} rightText - Text for right button
- * @param {boolean} transparent - Whether header is transparent
- * @param {boolean} light - Whether to use light text color
- * @param {object} style - Additional styles for header container
  */
-const Header = ({
+const Header: React.FC<HeaderProps> = ({
   title,
   onBackPress,
   onRightPress,
@@ -158,4 +162,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Header;
+export default Header; 
