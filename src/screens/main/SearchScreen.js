@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   TextInput,
-  ScrollView,
   ActivityIndicator,
   Keyboard,
 } from 'react-native';
@@ -16,9 +15,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import Card from '../../components/Card';
 import FilterSection from '../../components/FilterSection';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { USER_TYPES, INSTRUMENTS, GENRES, SEARCH_RADIUS_OPTIONS } from '../../utils/constants';
+import { USER_TYPES, INSTRUMENTS, GENRES } from '../../utils/constants';
 
-// Same mock data from HomeScreen for demo purposes
+// Reusing the mock data from HomeScreen
 const mockBands = [
   {
     id: '1',
@@ -86,328 +85,336 @@ const mockMusicians = [
 
 const SearchScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const [searchMode, setSearchMode] = useState(
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState(
     user?.type === USER_TYPES.MUSICIAN ? 'bands' : 'musicians'
   );
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState([]);
-
-  // Filter states
+  const [filtersVisible, setFiltersVisible] = useState(false);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedInstruments, setSelectedInstruments] = useState([]);
-  const [searchRadius, setSearchRadius] = useState(SEARCH_RADIUS_OPTIONS[2]); // Default to 25km
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [maxDistance, setMaxDistance] = useState(50); // in km
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const toggleSearchMode = () => {
-    setSearchMode(searchMode === 'bands' ? 'musicians' : 'bands');
+  const toggleSearchType = () => {
+    setSearchType(searchType === 'bands' ? 'musicians' : 'bands');
+    setSearchQuery('');
     setResults([]);
   };
 
   const toggleFilters = () => {
-    setShowFilters(!showFilters);
-    Keyboard.dismiss();
-  };
-
-  const handleSearch = () => {
-    Keyboard.dismiss();
-    setIsSearching(true);
-    
-    // Simulate API call with a delay
-    setTimeout(() => {
-      // Filter mock data based on search criteria
-      let filteredResults = [];
-      
-      if (searchMode === 'bands') {
-        filteredResults = mockBands.filter(band => {
-          // Filter by name if search query exists
-          if (searchQuery && !band.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-            return false;
-          }
-          
-          // Filter by genres if selected
-          if (selectedGenres.length > 0) {
-            const hasMatchingGenre = band.genres.some(genre => 
-              selectedGenres.some(selected => selected.id === genre.id)
-            );
-            if (!hasMatchingGenre) return false;
-          }
-          
-          // Filter by instruments if selected (matching open positions)
-          if (selectedInstruments.length > 0) {
-            const hasMatchingPosition = band.openPositions.some(position => 
-              selectedInstruments.some(selected => selected.id === position.id)
-            );
-            if (!hasMatchingPosition) return false;
-          }
-          
-          // Filter by availability
-          if (availableOnly && !band.isAvailable) {
-            return false;
-          }
-          
-          // Filter by distance (searchRadius)
-          if (band.location.distance > searchRadius.value) {
-            return false;
-          }
-          
-          return true;
-        });
-      } else {
-        // Similar filtering logic for musicians
-        filteredResults = mockMusicians.filter(musician => {
-          // Filter by name if search query exists
-          if (searchQuery && !musician.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-            return false;
-          }
-          
-          // Filter by genres if selected
-          if (selectedGenres.length > 0) {
-            const hasMatchingGenre = musician.genres.some(genre => 
-              selectedGenres.some(selected => selected.id === genre.id)
-            );
-            if (!hasMatchingGenre) return false;
-          }
-          
-          // Filter by instruments if selected
-          if (selectedInstruments.length > 0) {
-            const hasMatchingInstrument = musician.instruments.some(instrument => 
-              selectedInstruments.some(selected => selected.id === instrument.id)
-            );
-            if (!hasMatchingInstrument) return false;
-          }
-          
-          // Filter by availability
-          if (availableOnly && !musician.isAvailable) {
-            return false;
-          }
-          
-          // Filter by distance (searchRadius)
-          if (musician.location.distance > searchRadius.value) {
-            return false;
-          }
-          
-          return true;
-        });
-      }
-      
-      setResults(filteredResults);
-      setIsSearching(false);
-    }, 1000);
-  };
-
-  const handleSelectGenre = (genre) => {
-    if (selectedGenres.some(selected => selected.id === genre.id)) {
-      setSelectedGenres(selectedGenres.filter(selected => selected.id !== genre.id));
-    } else {
-      setSelectedGenres([...selectedGenres, genre]);
-    }
-  };
-
-  const handleSelectInstrument = (instrument) => {
-    if (selectedInstruments.some(selected => selected.id === instrument.id)) {
-      setSelectedInstruments(selectedInstruments.filter(selected => selected.id !== instrument.id));
-    } else {
-      setSelectedInstruments([...selectedInstruments, instrument]);
-    }
-  };
-
-  const handleSelectRadius = (radius) => {
-    setSearchRadius(radius);
+    setFiltersVisible(!filtersVisible);
   };
 
   const toggleAvailableOnly = () => {
     setAvailableOnly(!availableOnly);
   };
 
+  const handleSearch = () => {
+    setLoading(true);
+    Keyboard.dismiss();
+
+    // In a real app, this would be an API call with filters
+    // For now, we'll simulate a search with mock data
+    setTimeout(() => {
+      let filteredResults = searchType === 'bands' ? [...mockBands] : [...mockMusicians];
+
+      // Filter by search query (name)
+      if (searchQuery) {
+        filteredResults = filteredResults.filter(item =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // Filter by available only
+      if (availableOnly) {
+        filteredResults = filteredResults.filter(item => item.isAvailable);
+      }
+
+      // Filter by genres
+      if (selectedGenres.length > 0) {
+        filteredResults = filteredResults.filter(item =>
+          item.genres.some(genre => selectedGenres.some(sg => sg.id === genre.id))
+        );
+      }
+
+      // Filter by instruments (only applicable for certain searches)
+      if (selectedInstruments.length > 0) {
+        if (searchType === 'musicians') {
+          filteredResults = filteredResults.filter(item =>
+            item.instruments.some(inst => selectedInstruments.some(si => si.id === inst.id))
+          );
+        } else if (searchType === 'bands') {
+          filteredResults = filteredResults.filter(item =>
+            item.openPositions.some(pos => selectedInstruments.some(si => si.id === pos.id))
+          );
+        }
+      }
+
+      // Filter by distance
+      filteredResults = filteredResults.filter(
+        item => !item.location.distance || item.location.distance <= maxDistance
+      );
+
+      setResults(filteredResults);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const handleSelectGenre = (genre) => {
+    const isSelected = selectedGenres.some(g => g.id === genre.id);
+    if (isSelected) {
+      setSelectedGenres(selectedGenres.filter(g => g.id !== genre.id));
+    } else {
+      setSelectedGenres([...selectedGenres, genre]);
+    }
+  };
+
+  const handleSelectInstrument = (instrument) => {
+    const isSelected = selectedInstruments.some(i => i.id === instrument.id);
+    if (isSelected) {
+      setSelectedInstruments(selectedInstruments.filter(i => i.id !== instrument.id));
+    } else {
+      setSelectedInstruments([...selectedInstruments, instrument]);
+    }
+  };
+
+  const clearFilters = () => {
+    setSelectedGenres([]);
+    setSelectedInstruments([]);
+    setAvailableOnly(false);
+    setMaxDistance(50);
+  };
+
   const handleCardPress = (item) => {
-    if (searchMode === 'bands') {
+    if (searchType === 'bands') {
       navigation.navigate('BandProfile', { bandId: item.id });
     } else {
       navigation.navigate('MusicianProfile', { musicianId: item.id });
     }
   };
 
-  const renderFilters = () => (
-    <ScrollView style={styles.filtersContainer}>
-      <FilterSection
-        title="Genres"
-        options={GENRES}
-        selectedOptions={selectedGenres}
-        onSelectOption={handleSelectGenre}
-        multiSelect={true}
-      />
-      
-      <FilterSection
-        title={searchMode === 'bands' ? 'Open Positions' : 'Instruments'}
-        options={INSTRUMENTS}
-        selectedOptions={selectedInstruments}
-        onSelectOption={handleSelectInstrument}
-        multiSelect={true}
-      />
-      
-      <FilterSection
-        title="Search Radius"
-        options={SEARCH_RADIUS_OPTIONS}
-        selectedOptions={[searchRadius]}
-        onSelectOption={handleSelectRadius}
-        multiSelect={false}
-      />
-      
-      <View style={styles.availableContainer}>
-        <Text style={styles.availableText}>Show available only</Text>
-        <TouchableOpacity 
-          style={[styles.checkbox, availableOnly && styles.checkboxChecked]}
-          onPress={toggleAvailableOnly}
-        >
-          {availableOnly && <Ionicons name="checkmark" size={16} color={COLORS.WHITE} />}
-        </TouchableOpacity>
+  const renderSearchBar = () => (
+    <View style={styles.searchBarContainer}>
+      <View style={styles.searchInputContainer}>
+        <Ionicons name="search" size={20} color={COLORS.GRAY} />
+        <TextInput
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder={`Search for ${searchType}`}
+          placeholderTextColor={COLORS.GRAY}
+          returnKeyType="search"
+          onSubmitEditing={handleSearch}
+        />
+        {searchQuery ? (
+          <TouchableOpacity
+            onPress={() => setSearchQuery('')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="close-circle" size={18} color={COLORS.GRAY} />
+          </TouchableOpacity>
+        ) : null}
       </View>
-      
-      <Button
-        title="Apply Filters"
-        onPress={() => {
-          handleSearch();
-          setShowFilters(false);
-        }}
-        style={styles.applyButton}
-      />
-    </ScrollView>
-  );
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      {isSearching ? (
-        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
-      ) : results.length === 0 && searchQuery ? (
-        <>
-          <Ionicons name="search-outline" size={50} color={COLORS.LIGHT_GRAY} />
-          <Text style={styles.emptyText}>No results found</Text>
-          <Text style={styles.emptySubtext}>
-            Try adjusting your search criteria or filters
-          </Text>
-        </>
-      ) : (
-        <>
-          <Ionicons name="search-outline" size={50} color={COLORS.LIGHT_GRAY} />
-          <Text style={styles.emptyText}>
-            Search for {searchMode}
-          </Text>
-          <Text style={styles.emptySubtext}>
-            Use the search bar above to find {searchMode} near you
-          </Text>
-        </>
-      )}
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={toggleFilters}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name={filtersVisible ? 'options' : 'options-outline'}
+          size={22}
+          color={COLORS.PRIMARY}
+        />
+      </TouchableOpacity>
     </View>
   );
+
+  const renderSearchTypeToggle = () => (
+    <View style={styles.searchTypeContainer}>
+      <TouchableOpacity
+        style={[
+          styles.searchTypeButton,
+          searchType === 'musicians' && styles.activeSearchTypeButton,
+        ]}
+        onPress={() => setSearchType('musicians')}
+      >
+        <Text
+          style={[
+            styles.searchTypeText,
+            searchType === 'musicians' && styles.activeSearchTypeText,
+          ]}
+        >
+          Musicians
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.searchTypeButton,
+          searchType === 'bands' && styles.activeSearchTypeButton,
+        ]}
+        onPress={() => setSearchType('bands')}
+      >
+        <Text
+          style={[
+            styles.searchTypeText,
+            searchType === 'bands' && styles.activeSearchTypeText,
+          ]}
+        >
+          Bands
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderFilters = () => {
+    if (!filtersVisible) return null;
+    
+    return (
+      <View style={styles.filtersContainer}>
+        <View style={styles.filterHeader}>
+          <Text style={styles.filterTitle}>Filters</Text>
+          <TouchableOpacity onPress={clearFilters}>
+            <Text style={styles.clearFiltersText}>Clear All</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <FilterSection
+          title="Genres"
+          options={GENRES}
+          selectedOptions={selectedGenres}
+          onSelectOption={handleSelectGenre}
+          multiSelect={true}
+        />
+        
+        <FilterSection
+          title={searchType === 'musicians' ? 'Instruments' : 'Looking for'}
+          options={INSTRUMENTS}
+          selectedOptions={selectedInstruments}
+          onSelectOption={handleSelectInstrument}
+          multiSelect={true}
+        />
+        
+        <View style={styles.availableFilter}>
+          <Text style={styles.availableFilterText}>Available Only</Text>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              availableOnly && styles.toggleButtonActive,
+            ]}
+            onPress={toggleAvailableOnly}
+          >
+            <View
+              style={[
+                styles.toggleKnob,
+                availableOnly && styles.toggleKnobActive,
+              ]}
+            />
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.buttonRow}>
+          <Button
+            title="Apply Filters"
+            onPress={() => {
+              handleSearch();
+              toggleFilters();
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderEmptyResults = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+          <Text style={styles.loadingText}>Searching...</Text>
+        </View>
+      );
+    }
+
+    if (results.length === 0 && searchQuery) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="search" size={50} color={COLORS.LIGHT_GRAY} />
+          <Text style={styles.emptyText}>
+            No results found for "{searchQuery}"
+          </Text>
+          <Text style={styles.emptySubtext}>
+            Try adjusting your search or filters
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons name="search" size={50} color={COLORS.LIGHT_GRAY} />
+        <Text style={styles.emptyText}>
+          Search for {searchType}
+        </Text>
+        <Text style={styles.emptySubtext}>
+          Use the search bar above to find {searchType} near you
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Search</Text>
-          <View style={styles.searchToggleContainer}>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                searchMode === 'bands' && styles.activeToggleButton,
-              ]}
-              onPress={() => setSearchMode('bands')}
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  searchMode === 'bands' && styles.activeToggleText,
-                ]}
-              >
-                Bands
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                searchMode === 'musicians' && styles.activeToggleButton,
-              ]}
-              onPress={() => setSearchMode('musicians')}
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  searchMode === 'musicians' && styles.activeToggleText,
-                ]}
-              >
-                Musicians
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {renderSearchTypeToggle()}
+          {renderSearchBar()}
         </View>
-
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search-outline" size={20} color={COLORS.GRAY} style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={`Search for ${searchMode}...`}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              returnKeyType="search"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color={COLORS.GRAY} />
-              </TouchableOpacity>
+        
+        {renderFilters()}
+        
+        {results.length > 0 ? (
+          <FlatList
+            data={results}
+            renderItem={({ item }) => (
+              <Card
+                item={item}
+                onPress={() => handleCardPress(item)}
+                type={searchType === 'bands' ? 'band' : 'musician'}
+                isSearchResult={true}
+              />
             )}
-          </View>
-          <TouchableOpacity style={styles.filterButton} onPress={toggleFilters}>
-            <Ionicons 
-              name="options-outline" 
-              size={20} 
-              color={showFilters ? COLORS.PRIMARY : COLORS.DARK_TEXT} 
-            />
-          </TouchableOpacity>
-        </View>
-
-        {showFilters && renderFilters()}
-
-        <FlatList
-          data={results}
-          renderItem={({ item }) => (
-            <Card
-              item={item}
-              onPress={() => handleCardPress(item)}
-              type={searchMode === 'bands' ? 'band' : 'musician'}
-              isSearchResult={true}
-            />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={renderEmptyState()}
-        />
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          renderEmptyResults()
+        )}
       </View>
     </SafeAreaView>
   );
 };
 
-// Dummy Button component since it doesn't auto-import from components
-const Button = ({ title, onPress, style, disabled }) => (
+// Button component (simplified version just for this screen)
+const Button = ({ title, onPress, loading, disabled, style }) => (
   <TouchableOpacity
     style={[
-      {
-        backgroundColor: COLORS.PRIMARY,
-        paddingVertical: SPACING.MEDIUM,
-        borderRadius: BORDER_RADIUS.MEDIUM,
-        alignItems: 'center',
-      },
-      disabled && { opacity: 0.5 },
+      styles.button,
+      disabled && styles.buttonDisabled,
       style,
     ]}
     onPress={onPress}
-    disabled={disabled}
+    disabled={disabled || loading}
+    activeOpacity={0.7}
   >
-    <Text style={{ color: COLORS.WHITE, fontWeight: 'bold' }}>{title}</Text>
+    {loading ? (
+      <ActivityIndicator color={COLORS.WHITE} size="small" />
+    ) : (
+      <Text style={styles.buttonText}>{title}</Text>
+    )}
   </TouchableOpacity>
 );
 
@@ -428,102 +435,140 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.EXTRA_LARGE,
     fontWeight: 'bold',
     color: COLORS.PRIMARY,
-    marginBottom: SPACING.SMALL,
+    marginBottom: SPACING.MEDIUM,
   },
-  searchToggleContainer: {
+  searchTypeContainer: {
     flexDirection: 'row',
+    marginBottom: SPACING.MEDIUM,
     backgroundColor: COLORS.SECONDARY,
     borderRadius: 25,
     padding: 4,
-    marginTop: SPACING.SMALL,
   },
-  toggleButton: {
+  searchTypeButton: {
     flex: 1,
     paddingVertical: SPACING.SMALL,
     alignItems: 'center',
     borderRadius: 25,
   },
-  activeToggleButton: {
+  activeSearchTypeButton: {
     backgroundColor: COLORS.PRIMARY,
   },
-  toggleText: {
+  searchTypeText: {
     fontSize: FONT_SIZE.REGULAR,
     fontWeight: '500',
     color: COLORS.DARK_TEXT,
   },
-  activeToggleText: {
+  activeSearchTypeText: {
     color: COLORS.WHITE,
   },
-  searchContainer: {
+  searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.MEDIUM,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.LIGHT_GRAY,
   },
   searchInputContainer: {
     flex: 1,
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.SECONDARY,
     borderRadius: BORDER_RADIUS.MEDIUM,
     paddingHorizontal: SPACING.MEDIUM,
   },
-  searchIcon: {
-    marginRight: SPACING.SMALL,
-  },
   searchInput: {
     flex: 1,
-    height: 40,
+    height: '100%',
+    marginLeft: SPACING.SMALL,
+    color: COLORS.DARK_TEXT,
     fontSize: FONT_SIZE.REGULAR,
   },
   filterButton: {
-    marginLeft: SPACING.MEDIUM,
-    padding: SPACING.SMALL,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: SPACING.SMALL,
+    backgroundColor: COLORS.SECONDARY,
+    borderRadius: BORDER_RADIUS.MEDIUM,
   },
   filtersContainer: {
     padding: SPACING.MEDIUM,
     backgroundColor: COLORS.WHITE,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.LIGHT_GRAY,
-    maxHeight: 300,
   },
-  availableContainer: {
+  filterHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.MEDIUM,
   },
-  availableText: {
-    fontSize: FONT_SIZE.REGULAR,
+  filterTitle: {
+    fontSize: FONT_SIZE.LARGE,
     fontWeight: 'bold',
     color: COLORS.DARK_TEXT,
   },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: COLORS.PRIMARY,
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+  clearFiltersText: {
+    fontSize: FONT_SIZE.SMALL,
+    color: COLORS.PRIMARY,
+    fontWeight: '500',
   },
-  checkboxChecked: {
+  availableFilter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: SPACING.MEDIUM,
+  },
+  availableFilterText: {
+    fontSize: FONT_SIZE.REGULAR,
+    fontWeight: '500',
+    color: COLORS.DARK_TEXT,
+  },
+  toggleButton: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: COLORS.LIGHT_GRAY,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  toggleButtonActive: {
     backgroundColor: COLORS.PRIMARY,
   },
-  applyButton: {
+  toggleKnob: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: COLORS.WHITE,
+  },
+  toggleKnobActive: {
+    alignSelf: 'flex-end',
+  },
+  buttonRow: {
     marginTop: SPACING.MEDIUM,
   },
+  button: {
+    backgroundColor: COLORS.PRIMARY,
+    paddingVertical: SPACING.MEDIUM,
+    borderRadius: BORDER_RADIUS.MEDIUM,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: COLORS.WHITE,
+    fontSize: FONT_SIZE.REGULAR,
+    fontWeight: 'bold',
+  },
   listContainer: {
-    padding: SPACING.SMALL,
-    flexGrow: 1,
+    paddingVertical: SPACING.SMALL,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.LARGE,
-    marginTop: SPACING.EXTRA_LARGE,
   },
   emptyText: {
     marginTop: SPACING.MEDIUM,
@@ -537,6 +582,11 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.SMALL,
     color: COLORS.GRAY,
     textAlign: 'center',
+  },
+  loadingText: {
+    marginTop: SPACING.MEDIUM,
+    fontSize: FONT_SIZE.REGULAR,
+    color: COLORS.GRAY,
   },
 });
 
