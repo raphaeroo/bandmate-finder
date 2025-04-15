@@ -15,6 +15,7 @@ import { COLORS, FONT_SIZE, SPACING, SHADOWS } from '../../styles/theme';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
