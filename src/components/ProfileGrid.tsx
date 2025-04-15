@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Image,
   StyleSheet,
   TouchableOpacity,
   FlatList,
@@ -10,6 +9,7 @@ import {
   ListRenderItem,
   RefreshControlProps,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { COLORS, SPACING, BORDER_RADIUS } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -57,7 +57,7 @@ const ProfileGrid: React.FC<ProfileGridProps> = ({
         <Image
           source={{ uri: item.imageUrl }}
           style={styles.image}
-          resizeMode="cover"
+          contentFit='cover'
         />
         
         {/* Show video indicator if it's a video post */}
@@ -126,6 +126,7 @@ const ProfileGrid: React.FC<ProfileGridProps> = ({
   return (
     <FlatList
       data={posts}
+      scrollEnabled={false}
       renderItem={renderItem}
       keyExtractor={(item) => item.id.toString()}
       numColumns={COLUMN_COUNT}
@@ -156,6 +157,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   videoIndicator: {
     position: 'absolute',

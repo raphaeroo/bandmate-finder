@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { COLORS, FONT_SIZE, SPACING } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderProps {
   title?: string;
@@ -37,15 +36,13 @@ const Header: React.FC<HeaderProps> = ({
   light = false,
   style,
 }) => {
-  const insets = useSafeAreaInsets();
-  const statusBarHeight = insets.top;
 
   return (
     <View
       style={[
         styles.container,
         {
-          paddingTop: statusBarHeight,
+          paddingTop: 0,
           backgroundColor: transparent ? 'transparent' : COLORS.PRIMARY,
         },
         style,

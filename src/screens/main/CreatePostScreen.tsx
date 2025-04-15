@@ -5,9 +5,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../../styles/theme';
 import Header from '../../components/Header';
@@ -31,7 +31,7 @@ const CreatePostScreen: React.FC<CreatePostScreenProps> = ({ navigation }) => {
   const handleAddMedia = () => {
     // In a real app, this would open image/video picker
     const mockMedia: MediaItem = {
-      uri: 'https://via.placeholder.com/300',
+      uri: 'https://placehold.co/300',
       type: 'image',
     };
     setMedia([...media, mockMedia]);

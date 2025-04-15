@@ -5,11 +5,11 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
   TextInput,
   ActivityIndicator,
   ListRenderItem,
 } from "react-native";
+import { Image } from 'expo-image';
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   COLORS,
@@ -58,7 +58,7 @@ const mockChats: Chat[] = [
       id: "101",
       name: "Jane Smith",
       type: "musician",
-      profileImage: "https://via.placeholder.com/100",
+      profileImage: "https://placehold.co/100",
       instrument: "Saxophone",
     },
     lastMessage: {
@@ -75,7 +75,7 @@ const mockChats: Chat[] = [
       id: "102",
       name: "Rock Legends",
       type: "band",
-      profileImage: "https://via.placeholder.com/100",
+      profileImage: "https://placehold.co/100",
     },
     lastMessage: {
       text: "We'd love to have you join us for the upcoming show!",
@@ -91,7 +91,7 @@ const mockChats: Chat[] = [
       id: "103",
       name: "Mike Johnson",
       type: "musician",
-      profileImage: "https://via.placeholder.com/100",
+      profileImage: "https://placehold.co/100",
       instrument: "Drums",
     },
     lastMessage: {
@@ -108,7 +108,7 @@ const mockChats: Chat[] = [
       id: "104",
       name: "Jazz Ensemble",
       type: "band",
-      profileImage: "https://via.placeholder.com/100",
+      profileImage: "https://placehold.co/100",
     },
     lastMessage: {
       text: "Thanks for reaching out! We're currently looking for a saxophonist.",
@@ -124,7 +124,7 @@ const mockChats: Chat[] = [
       id: "105",
       name: "Sarah Lee",
       type: "musician",
-      profileImage: "https://via.placeholder.com/100",
+      profileImage: "https://placehold.co/100",
       instrument: "Bass",
     },
     lastMessage: {

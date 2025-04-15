@@ -62,7 +62,7 @@ const mockBands: Band[] = [
   {
     id: '1',
     name: 'Rock Legends',
-    profileImage: 'https://via.placeholder.com/100',
+    profileImage: 'https://placehold.co/100',
     genres: [{ id: 'rock', name: 'Rock' }, { id: 'blues', name: 'Blues' }],
     location: { city: 'New York', state: 'NY', distance: 2.5 },
     isAvailable: true,
@@ -72,7 +72,7 @@ const mockBands: Band[] = [
   {
     id: '2',
     name: 'Jazz Ensemble',
-    profileImage: 'https://via.placeholder.com/100',
+    profileImage: 'https://placehold.co/100',
     genres: [{ id: 'jazz', name: 'Jazz' }, { id: 'blues', name: 'Blues' }],
     location: { city: 'Chicago', state: 'IL', distance: 1.7 },
     isAvailable: true,
@@ -82,7 +82,7 @@ const mockBands: Band[] = [
   {
     id: '3',
     name: 'Indie Vibes',
-    profileImage: 'https://via.placeholder.com/100',
+    profileImage: 'https://placehold.co/100',
     genres: [{ id: 'indie', name: 'Indie' }, { id: 'alternative', name: 'Alternative' }],
     location: { city: 'Austin', state: 'TX', distance: 3.2 },
     isAvailable: false,
@@ -95,7 +95,7 @@ const mockMusicians: Musician[] = [
   {
     id: '1',
     name: 'John Doe',
-    profileImage: 'https://via.placeholder.com/100',
+    profileImage: 'https://placehold.co/100',
     genres: [{ id: 'rock', name: 'Rock' }, { id: 'blues', name: 'Blues' }],
     location: { city: 'Los Angeles', state: 'CA', distance: 1.8 },
     isAvailable: true,
@@ -105,7 +105,7 @@ const mockMusicians: Musician[] = [
   {
     id: '2',
     name: 'Jane Smith',
-    profileImage: 'https://via.placeholder.com/100',
+    profileImage: 'https://placehold.co/100',
     genres: [{ id: 'jazz', name: 'Jazz' }, { id: 'soul', name: 'Soul' }],
     location: { city: 'Seattle', state: 'WA', distance: 4.5 },
     isAvailable: true,
@@ -114,7 +114,7 @@ const mockMusicians: Musician[] = [
   {
     id: '3',
     name: 'Mike Johnson',
-    profileImage: 'https://via.placeholder.com/100',
+    profileImage: 'https://placehold.co/100',
     genres: [{ id: 'pop', name: 'Pop' }, { id: 'rnb', name: 'R&B' }],
     location: { city: 'Miami', state: 'FL', distance: 2.1 },
     isAvailable: false,

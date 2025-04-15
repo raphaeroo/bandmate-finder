@@ -6,10 +6,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_SIZE, SPACING, SHADOWS } from '../../styles/theme';
 import Input from '../../components/Input';

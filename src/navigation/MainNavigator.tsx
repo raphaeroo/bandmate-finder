@@ -8,7 +8,7 @@ import {
   BottomTabScreenProps,
 } from "@react-navigation/bottom-tabs";
 import { useAuth } from "../contexts/AuthContext";
-import { COLORS } from "../styles/theme";
+import { COLORS, SPACING } from "../styles/theme";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 // Auth Screens
@@ -47,7 +47,7 @@ export type HomeStackParamList = {
   BandProfile: { bandId: string };
   MusicianProfile: { musicianId: string };
   CreatePost: undefined;
-  Chat: { chatId: string; user: { id: string; name: string; type: string; profileImage: string; } };
+  ChatFromHome: ChatStackParamList["Chat"];
 };
 
 export type SearchStackParamList = {
@@ -58,7 +58,10 @@ export type SearchStackParamList = {
 
 export type ChatStackParamList = {
   ChatList: undefined;
-  Chat: { chatId: string; user: { id: string; name: string; type: string; profileImage: string; } };
+  Chat: {
+    chatId: string;
+    user: { id: string; name: string; type: string; profileImage: string };
+  };
   BandProfile: { bandId: string };
   MusicianProfile: { musicianId: string };
 };
@@ -77,7 +80,7 @@ export type ProfileStackParamList = {
 export type TabParamList = {
   Home: undefined;
   Search: undefined;
-  Chat: undefined;
+  ChatTab: undefined;
   Profile: undefined;
 };
 
@@ -125,6 +128,14 @@ const HomeStackNavigator: React.FC = () => {
         component={MusicianProfileScreen}
       />
       <HomeStack.Screen name="CreatePost" component={CreatePostScreen} />
+      <HomeStack.Screen
+        name="ChatFromHome"
+        component={
+          ChatScreen as unknown as React.FC<
+            NativeStackScreenProps<HomeStackParamList, "ChatFromHome">
+          >
+        }
+      />
     </HomeStack.Navigator>
   );
 };
@@ -188,13 +199,18 @@ const MainTabNavigator: React.FC = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: COLORS.ACCENT,
+        tabBarActiveTintColor: COLORS.PRIMARY,
         tabBarInactiveTintColor: COLORS.GRAY,
         tabBarStyle: {
           backgroundColor: COLORS.WHITE,
           borderTopColor: COLORS.LIGHT_GRAY,
-          paddingTop: 5,
           height: 60,
+          elevation: 10,
+          shadowColor: COLORS.BLACK,
+          paddingBottom: SPACING.TINY,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;
@@ -203,7 +219,7 @@ const MainTabNavigator: React.FC = () => {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Search") {
             iconName = focused ? "search" : "search-outline";
-          } else if (route.name === "Chat") {
+          } else if (route.name === "ChatTab") {
             iconName = focused ? "chatbubbles" : "chatbubbles-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
@@ -217,7 +233,13 @@ const MainTabNavigator: React.FC = () => {
     >
       <Tab.Screen name="Home" component={HomeStackNavigator} />
       <Tab.Screen name="Search" component={SearchStackNavigator} />
-      <Tab.Screen name="Chat" component={ChatStackNavigator} />
+      <Tab.Screen
+        name="ChatTab"
+        options={{
+          title: "Chat",
+        }}
+        component={ChatStackNavigator}
+      />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );

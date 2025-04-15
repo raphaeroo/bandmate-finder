@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   TouchableOpacity,
   Dimensions,
@@ -10,6 +9,7 @@ import {
   TextStyle,
   ImageSourcePropType,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../styles/theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 

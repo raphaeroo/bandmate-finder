@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableWithoutFeedback,
   ViewStyle,
   TextStyle,
   ImageSourcePropType,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../styles/theme';
 
 interface Sender {

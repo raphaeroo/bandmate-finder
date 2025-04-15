@@ -8,10 +8,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Image,
   ActivityIndicator,
   ListRenderItem,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from "../../styles/theme";
 import Header from "../../components/Header";
@@ -230,7 +230,14 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route, navigation }) => {
               isMyMessage ? styles.myMessageBubble : styles.theirMessageBubble,
             ]}
           >
-            <Text style={styles.messageText}>{item.text}</Text>
+            <Text
+              style={[
+                styles.messageText,
+                isMyMessage && { color: COLORS.WHITE },
+              ]}
+            >
+              {item.text}
+            </Text>
             <Text style={styles.messageTime}>
               {formatMessageTime(item.timestamp)}
             </Text>

@@ -1,25 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../../styles/theme';
-import { useAuth } from '../../contexts/AuthContext';
-import Header from '../../components/Header';
-import ProfileGrid from '../../components/ProfileGrid';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { USER_TYPES } from '../../utils/constants';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ProfileStackParamList } from '../../navigation/MainNavigator';
+  FlatList,
+} from "react-native";
+import { Image } from "expo-image";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  COLORS,
+  FONT_SIZE,
+  SPACING,
+  BORDER_RADIUS,
+  SHADOWS,
+} from "../../styles/theme";
+import { useAuth } from "../../contexts/AuthContext";
+import Header from "../../components/Header";
+import ProfileGrid from "../../components/ProfileGrid";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { USER_TYPES } from "../../utils/constants";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ProfileStackParamList } from "../../navigation/MainNavigator";
 
-type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileScreen'>;
+type ProfileScreenProps = NativeStackScreenProps<
+  ProfileStackParamList,
+  "ProfileScreen"
+>;
 
 interface Location {
   city: string;
@@ -52,7 +62,7 @@ interface Band {
 interface Post {
   id: string;
   imageUrl: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
   caption: string;
   likes: number;
   comments: number;
@@ -63,7 +73,7 @@ interface Post {
 interface BaseUser {
   id: string;
   name: string;
-  type: typeof USER_TYPES[keyof typeof USER_TYPES];
+  type: (typeof USER_TYPES)[keyof typeof USER_TYPES];
   profileImage: string;
   coverImage: string;
   bio: string;
@@ -90,50 +100,46 @@ type UserProfile = MusicianUser | BandUser;
 
 // Mock data for user profile
 const mockUserMusician: MusicianUser = {
-  id: '1',
-  name: 'John Doe',
+  id: "1",
+  name: "John Doe",
   type: USER_TYPES.MUSICIAN,
-  profileImage: 'https://via.placeholder.com/150',
-  coverImage: 'https://via.placeholder.com/600x200',
-  bio: 'Guitarist with 5+ years of experience. Passionate about rock, blues, and jazz. Looking to join a band for regular gigs.',
-  location: { city: 'New York', state: 'NY' },
+  profileImage: "https://placehold.co/150",
+  coverImage: "https://placehold.co/600x200",
+  bio: "Guitarist with 5+ years of experience. Passionate about rock, blues, and jazz. Looking to join a band for regular gigs.",
+  location: { city: "New York", state: "NY" },
   genres: [
-    { id: 'rock', name: 'Rock' },
-    { id: 'blues', name: 'Blues' },
-    { id: 'jazz', name: 'Jazz' },
+    { id: "rock", name: "Rock" },
+    { id: "blues", name: "Blues" },
+    { id: "jazz", name: "Jazz" },
   ],
   instruments: [
-    { id: 'guitar', name: 'Guitar' },
-    { id: 'bass', name: 'Bass' },
+    { id: "guitar", name: "Guitar" },
+    { id: "bass", name: "Bass" },
   ],
-  bands: [
-    { id: '1', name: 'The Rockers', role: 'Lead Guitarist' },
-  ],
+  bands: [{ id: "1", name: "The Rockers", role: "Lead Guitarist" }],
   isAvailable: true,
   followers: 124,
   following: 87,
 };
 
 const mockUserBand: BandUser = {
-  id: '2',
-  name: 'Rock Legends',
+  id: "2",
+  name: "Rock Legends",
   type: USER_TYPES.BAND,
-  profileImage: 'https://via.placeholder.com/150',
-  coverImage: 'https://via.placeholder.com/600x200',
-  bio: 'High-energy rock band looking for a lead guitarist. We play regular gigs in the New York area and are working on our first album.',
-  location: { city: 'New York', state: 'NY' },
+  profileImage: "https://placehold.co/150",
+  coverImage: "https://placehold.co/600x200",
+  bio: "High-energy rock band looking for a lead guitarist. We play regular gigs in the New York area and are working on our first album.",
+  location: { city: "New York", state: "NY" },
   genres: [
-    { id: 'rock', name: 'Rock' },
-    { id: 'alternative', name: 'Alternative' },
+    { id: "rock", name: "Rock" },
+    { id: "alternative", name: "Alternative" },
   ],
   members: [
-    { id: '1', name: 'Jane Smith', role: 'Vocals', instrument: 'Vocals' },
-    { id: '2', name: 'Mike Johnson', role: 'Drummer', instrument: 'Drums' },
-    { id: '3', name: 'Sarah Lee', role: 'Bassist', instrument: 'Bass' },
+    { id: "1", name: "Jane Smith", role: "Vocals", instrument: "Vocals" },
+    { id: "2", name: "Mike Johnson", role: "Drummer", instrument: "Drums" },
+    { id: "3", name: "Sarah Lee", role: "Bassist", instrument: "Bass" },
   ],
-  openPositions: [
-    { id: 'guitar', name: 'Lead Guitarist' },
-  ],
+  openPositions: [{ id: "guitar", name: "Lead Guitarist" }],
   isAvailable: true,
   followers: 256,
   following: 42,
@@ -142,59 +148,59 @@ const mockUserBand: BandUser = {
 // Mock posts data
 const mockPosts: Post[] = [
   {
-    id: '1',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
-    caption: 'Rehearsal session',
+    id: "1",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
+    caption: "Rehearsal session",
     likes: 45,
     comments: 12,
-    createdAt: '2023-06-15T14:30:00Z',
+    createdAt: "2023-06-15T14:30:00Z",
   },
   {
-    id: '2',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'video',
-    caption: 'Live at The Venue',
+    id: "2",
+    imageUrl: "https://placehold.co/300",
+    type: "video",
+    caption: "Live at The Venue",
     likes: 78,
     comments: 24,
-    createdAt: '2023-06-10T20:15:00Z',
+    createdAt: "2023-06-10T20:15:00Z",
   },
   {
-    id: '3',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
+    id: "3",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
     imageCount: 3,
-    caption: 'New gear day!',
+    caption: "New gear day!",
     likes: 56,
     comments: 8,
-    createdAt: '2023-06-05T12:00:00Z',
+    createdAt: "2023-06-05T12:00:00Z",
   },
   {
-    id: '4',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
-    caption: 'Studio session',
+    id: "4",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
+    caption: "Studio session",
     likes: 34,
     comments: 5,
-    createdAt: '2023-05-30T16:45:00Z',
+    createdAt: "2023-05-30T16:45:00Z",
   },
   {
-    id: '5',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'video',
-    caption: 'Backstage moments',
+    id: "5",
+    imageUrl: "https://placehold.co/300",
+    type: "video",
+    caption: "Backstage moments",
     likes: 67,
     comments: 15,
-    createdAt: '2023-05-25T19:20:00Z',
+    createdAt: "2023-05-25T19:20:00Z",
   },
   {
-    id: '6',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
-    caption: 'Jam session with friends',
+    id: "6",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
+    caption: "Jam session with friends",
     likes: 42,
     comments: 7,
-    createdAt: '2023-05-20T15:10:00Z',
+    createdAt: "2023-05-20T15:10:00Z",
   },
 ];
 
@@ -216,13 +222,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       // For now, we'll use mock data
       setTimeout(() => {
         // Choose profile data based on user type
-        const mockData = user?.type === USER_TYPES.MUSICIAN ? mockUserMusician : mockUserBand;
+        const mockData =
+          user?.type === USER_TYPES.MUSICIAN ? mockUserMusician : mockUserBand;
         setProfileData(mockData);
         setPosts(mockPosts);
         setLoading(false);
       }, 1000);
     } catch (error) {
-      console.error('Error loading profile data:', error);
+      console.error("Error loading profile data:", error);
       setLoading(false);
     }
   };
@@ -234,31 +241,31 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   };
 
   const handleEditProfile = () => {
-    navigation.navigate('EditProfile');
+    navigation.navigate("EditProfile");
   };
 
   const handleSettings = () => {
-    navigation.navigate('Settings');
+    navigation.navigate("Settings");
   };
 
   const handlePostPress = (post: Post) => {
     // In a real app, navigate to post detail screen
-    console.log('Post pressed:', post);
+    console.log("Post pressed:", post);
   };
 
   const handleAddPost = () => {
     // TODO: Implement CreatePost navigation when screen is added to navigator
-    console.log('Add post pressed');
+    console.log("Add post pressed");
   };
 
   const handleMemberPress = (member: BandMember) => {
     // TODO: Implement MusicianProfile navigation when screen is added to navigator
-    console.log('Member pressed:', member);
+    console.log("Member pressed:", member);
   };
 
   const handleBandPress = (band: Band) => {
     // TODO: Implement BandProfile navigation when screen is added to navigator
-    console.log('Band pressed:', band);
+    console.log("Band pressed:", band);
   };
 
   const renderProfileHeader = () => {
@@ -271,41 +278,47 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           source={{ uri: profileData.coverImage }}
           style={styles.coverImage}
         />
-        
-        {/* Profile Image */}
-        <View style={styles.profileImageContainer}>
-          <Image
-            source={{ uri: profileData.profileImage }}
-            style={styles.profileImage}
-          />
-        </View>
-        
+
         {/* Profile Info */}
         <View style={styles.profileInfoContainer}>
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{profileData.name}</Text>
-            {profileData.isAvailable && (
-              <View style={styles.availabilityBadge}>
-                <Text style={styles.availabilityText}>Available</Text>
+          <View style={styles.profileInfoHeader}>
+            {/* Profile Image */}
+            <View style={styles.profileImageContainer}>
+              <Image
+                source={{ uri: profileData.profileImage }}
+                style={styles.profileImage}
+              />
+            </View>
+            <View style={styles.profileInfoHeaderContent}>
+              <View style={styles.nameContainer}>
+                <Text style={styles.name}>{profileData.name}</Text>
+                {profileData.isAvailable && (
+                  <View style={styles.availabilityBadge}>
+                    <Text style={styles.availabilityText}>Available</Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-          
-          <Text style={styles.location}>
-            <Ionicons name="location-outline" size={16} color={COLORS.GRAY} />
-            {' '}
-            {profileData.location.city}, {profileData.location.state}
-          </Text>
-          
-          {/* Genres */}
-          <View style={styles.tagsContainer}>
-            {profileData.genres.map((genre) => (
-              <View key={genre.id} style={styles.tagChip}>
-                <Text style={styles.tagText}>{genre.name}</Text>
+
+              <Text style={styles.location}>
+                <Ionicons
+                  name="location-outline"
+                  size={16}
+                  color={COLORS.GRAY}
+                />{" "}
+                {profileData.location.city}, {profileData.location.state}
+              </Text>
+
+              {/* Genres */}
+              <View style={styles.tagsContainer}>
+                {profileData.genres.map((genre) => (
+                  <View key={genre.id} style={styles.tagChip}>
+                    <Text style={styles.tagText}>{genre.name}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
-          
+
           {/* Instruments or Band Members */}
           {profileData.type === USER_TYPES.MUSICIAN ? (
             <View style={styles.instrumentsContainer}>
@@ -329,7 +342,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     onPress={() => handleMemberPress(member)}
                   >
                     <Image
-                      source={{ uri: 'https://via.placeholder.com/50' }}
+                      source={{ uri: "https://placehold.co/50" }}
                       style={styles.memberImage}
                     />
                     <View style={styles.memberInfo}>
@@ -355,11 +368,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       );
     }
 
-    return (
-      <ProfileGrid
-        posts={posts}
-      />
-    );
+    return <ProfileGrid posts={posts} />;
   };
 
   return (
@@ -369,8 +378,24 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         rightIcon="settings-outline"
         onRightPress={handleSettings}
       />
-      <ScrollView
-        style={styles.container}
+      <FlatList
+        data={posts}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.postItem}
+            onPress={() => handlePostPress(item)}
+          >
+            <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+            {item.imageCount && item.imageCount > 1 && (
+              <View style={styles.imageCountBadge}>
+                <Text style={styles.imageCountText}>+{item.imageCount - 1}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.id}
+        numColumns={3}
+        ListHeaderComponent={renderProfileHeader}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -379,10 +404,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             tintColor={COLORS.PRIMARY}
           />
         }
-      >
-        {renderProfileHeader()}
-        {renderPosts()}
-      </ScrollView>
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.contentContainer}
+        style={styles.flatList}
+      />
     </SafeAreaView>
   );
 };
@@ -392,22 +417,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
   },
-  container: {
+  flatList: {
     flex: 1,
   },
+  contentContainer: {
+    paddingBottom: SPACING.LARGE,
+  },
+  columnWrapper: {
+    padding: SPACING.TINY,
+  },
   profileHeaderContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: SPACING.MEDIUM,
   },
   coverImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    resizeMode: 'cover',
+    backgroundColor: COLORS.LIGHT_GRAY,
+    resizeMode: "cover",
+  },
+  profileInfoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.SMALL,
+    marginBottom: SPACING.MEDIUM,
+  },
+  profileInfoHeaderContent: {
+    paddingTop: SPACING.MEDIUM,
   },
   profileImageContainer: {
-    position: 'absolute',
-    bottom: -50,
-    left: SPACING.MEDIUM,
     borderRadius: BORDER_RADIUS.LARGE,
     ...SHADOWS.MEDIUM,
   },
@@ -420,16 +458,15 @@ const styles = StyleSheet.create({
   },
   profileInfoContainer: {
     padding: SPACING.MEDIUM,
-    paddingTop: 60,
   },
   nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: SPACING.TINY,
   },
   name: {
     fontSize: FONT_SIZE.LARGE,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.DARK_TEXT,
     marginRight: SPACING.SMALL,
   },
@@ -442,7 +479,7 @@ const styles = StyleSheet.create({
   availabilityText: {
     color: COLORS.WHITE,
     fontSize: FONT_SIZE.TINY,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   location: {
     fontSize: FONT_SIZE.SMALL,
@@ -450,8 +487,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.SMALL,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: SPACING.MEDIUM,
   },
   tagChip: {
@@ -468,13 +505,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: FONT_SIZE.MEDIUM,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.DARK_TEXT,
     marginBottom: SPACING.SMALL,
   },
-  instrumentsContainer: {
-    marginBottom: SPACING.MEDIUM,
-  },
+  instrumentsContainer: {},
   membersContainer: {
     marginBottom: SPACING.MEDIUM,
   },
@@ -482,8 +517,8 @@ const styles = StyleSheet.create({
     marginTop: SPACING.SMALL,
   },
   memberItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: SPACING.SMALL,
   },
   memberImage: {
@@ -506,10 +541,34 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: SPACING.LARGE,
+  },
+  postItem: {
+    flex: 1,
+    aspectRatio: 1,
+    margin: 1,
+  },
+  postImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imageCountBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: BORDER_RADIUS.SMALL,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  imageCountText: {
+    color: COLORS.WHITE,
+    fontSize: FONT_SIZE.SMALL,
+    fontWeight: 'bold',
   },
 });
 
-export default ProfileScreen; 
+export default ProfileScreen;

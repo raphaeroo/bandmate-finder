@@ -39,7 +39,7 @@ const mockNotifications: Notification[] = [
     sender: {
       id: '101',
       name: 'John Doe',
-      profileImage: 'https://via.placeholder.com/50',
+      profileImage: 'https://placehold.co/50',
     },
     createdAt: '2023-06-15T14:30:00Z',
     read: false,
@@ -51,7 +51,7 @@ const mockNotifications: Notification[] = [
     sender: {
       id: '102',
       name: 'Jane Smith',
-      profileImage: 'https://via.placeholder.com/50',
+      profileImage: 'https://placehold.co/50',
     },
     createdAt: '2023-06-14T10:15:00Z',
     read: true,
@@ -63,7 +63,7 @@ const mockNotifications: Notification[] = [
     sender: {
       id: '103',
       name: 'Rock Legends',
-      profileImage: 'https://via.placeholder.com/50',
+      profileImage: 'https://placehold.co/50',
     },
     createdAt: '2023-06-13T16:45:00Z',
     read: false,
@@ -164,7 +164,7 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation })
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="Notifications" />
+      <Header title="Notifications" onBackPress={() => navigation.goBack()} />
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.PRIMARY} />

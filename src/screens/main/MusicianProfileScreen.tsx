@@ -1,27 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../../styles/theme';
-import Header from '../../components/Header';
-import ProfileGrid from '../../components/ProfileGrid';
-import Button from '../../components/Button';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { USER_TYPES } from '../../utils/constants';
-import { useAuth } from '../../contexts/AuthContext';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../navigation/MainNavigator';
+  FlatList,
+} from "react-native";
+import { Image } from "expo-image";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  COLORS,
+  FONT_SIZE,
+  SPACING,
+  BORDER_RADIUS,
+  SHADOWS,
+} from "../../styles/theme";
+import Header from "../../components/Header";
+import ProfileGrid from "../../components/ProfileGrid";
+import Button from "../../components/Button";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { USER_TYPES } from "../../utils/constants";
+import { useAuth } from "../../contexts/AuthContext";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { HomeStackParamList } from "../../navigation/MainNavigator";
 
-type MusicianProfileScreenProps = NativeStackScreenProps<HomeStackParamList, 'MusicianProfile'>;
+type MusicianProfileScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "MusicianProfile"
+>;
 
 interface Location {
   city: string;
@@ -47,7 +57,7 @@ interface Band {
 interface Post {
   id: string;
   imageUrl: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
   caption: string;
   likes: number;
   comments: number;
@@ -74,26 +84,24 @@ interface MusicianProfile {
 
 // Mock data for musician profile
 const mockMusicianProfile: MusicianProfile = {
-  id: '101',
-  name: 'Jane Smith',
+  id: "101",
+  name: "Jane Smith",
   type: USER_TYPES.MUSICIAN,
-  profileImage: 'https://via.placeholder.com/150',
-  coverImage: 'https://via.placeholder.com/600x200',
-  bio: 'Professional saxophonist with over 10 years of experience. Jazz enthusiast with a background in classical music. Available for studio sessions and live performances.',
-  location: { city: 'Seattle', state: 'WA' },
+  profileImage: "https://placehold.co/150",
+  coverImage: "https://placehold.co/600x200",
+  bio: "Professional saxophonist with over 10 years of experience. Jazz enthusiast with a background in classical music. Available for studio sessions and live performances.",
+  location: { city: "Seattle", state: "WA" },
   genres: [
-    { id: 'jazz', name: 'Jazz' },
-    { id: 'classical', name: 'Classical' },
-    { id: 'soul', name: 'Soul' },
+    { id: "jazz", name: "Jazz" },
+    { id: "classical", name: "Classical" },
+    { id: "soul", name: "Soul" },
   ],
   instruments: [
-    { id: 'saxophone', name: 'Saxophone' },
-    { id: 'clarinet', name: 'Clarinet' },
+    { id: "saxophone", name: "Saxophone" },
+    { id: "clarinet", name: "Clarinet" },
   ],
-  bands: [
-    { id: '201', name: 'Seattle Jazz Collective', role: 'Saxophonist' },
-  ],
-  experienceLevel: 'Professional',
+  bands: [{ id: "201", name: "Seattle Jazz Collective", role: "Saxophonist" }],
+  experienceLevel: "Professional",
   isAvailable: true,
   followers: 215,
   following: 98,
@@ -102,45 +110,48 @@ const mockMusicianProfile: MusicianProfile = {
 // Mock posts data
 const mockPosts: Post[] = [
   {
-    id: '1',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
-    caption: 'Rehearsal day',
+    id: "1",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
+    caption: "Rehearsal day",
     likes: 42,
     comments: 7,
-    createdAt: '2023-06-15T14:30:00Z',
+    createdAt: "2023-06-15T14:30:00Z",
   },
   {
-    id: '2',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'video',
-    caption: 'Live jazz performance',
+    id: "2",
+    imageUrl: "https://placehold.co/300",
+    type: "video",
+    caption: "Live jazz performance",
     likes: 78,
     comments: 12,
-    createdAt: '2023-06-10T20:15:00Z',
+    createdAt: "2023-06-10T20:15:00Z",
   },
   {
-    id: '3',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
+    id: "3",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
     imageCount: 3,
-    caption: 'New sax arrived!',
+    caption: "New sax arrived!",
     likes: 63,
     comments: 9,
-    createdAt: '2023-06-05T12:00:00Z',
+    createdAt: "2023-06-05T12:00:00Z",
   },
   {
-    id: '4',
-    imageUrl: 'https://via.placeholder.com/300',
-    type: 'image',
-    caption: 'Studio session',
+    id: "4",
+    imageUrl: "https://placehold.co/300",
+    type: "image",
+    caption: "Studio session",
     likes: 51,
     comments: 5,
-    createdAt: '2023-05-30T16:45:00Z',
+    createdAt: "2023-05-30T16:45:00Z",
   },
 ];
 
-const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, navigation }) => {
+const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({
+  route,
+  navigation,
+}) => {
   const { musicianId } = route.params;
   const { user } = useAuth();
   const [profileData, setProfileData] = useState<MusicianProfile | null>(null);
@@ -166,7 +177,7 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
         setLoading(false);
       }, 1000);
     } catch (error) {
-      console.error('Error loading profile data:', error);
+      console.error("Error loading profile data:", error);
       setLoading(false);
     }
   };
@@ -179,47 +190,61 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
 
   const handleFollow = () => {
     if (!profileData) return;
-    
+
     // In a real app, this would be an API call
     setFollowing(!following);
-    
+
     // Show feedback
     Alert.alert(
-      following ? 'Unfollowed' : 'Followed',
-      following 
-        ? `You no longer follow ${profileData.name}` 
+      following ? "Unfollowed" : "Followed",
+      following
+        ? `You no longer follow ${profileData.name}`
         : `You are now following ${profileData.name}`
     );
   };
 
   const handleMessage = () => {
     if (!profileData) return;
-    
+
     setChatLoading(true);
-    
+
     // In a real app, this would check if a chat exists or create one
     setTimeout(() => {
       setChatLoading(false);
-      navigation.navigate('Chat', { 
+      navigation.navigate("ChatFromHome", {
         chatId: `chat_${musicianId}`,
         user: {
           id: musicianId,
           name: profileData.name,
           type: USER_TYPES.MUSICIAN,
           profileImage: profileData.profileImage,
-        }
+        },
       });
     }, 1000);
   };
 
   const handleBandPress = (band: Band) => {
-    navigation.navigate('BandProfile', { bandId: band.id });
+    navigation.navigate("BandProfile", { bandId: band.id });
   };
 
   const handlePostPress = (post: Post) => {
     // In a real app, navigate to post detail screen
-    console.log('Post pressed:', post);
+    console.log("Post pressed:", post);
   };
+
+  const renderItem = ({ item }: { item: Post }) => (
+    <TouchableOpacity
+      style={styles.postItem}
+      onPress={() => handlePostPress(item)}
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+      {item.imageCount && item.imageCount > 1 && (
+        <View style={styles.imageCountBadge}>
+          <Text style={styles.imageCountText}>+{item.imageCount - 1}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
 
   const renderProfileHeader = () => {
     if (!profileData) return null;
@@ -230,49 +255,55 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
         <Image
           source={{ uri: profileData.coverImage }}
           style={styles.coverImage}
+          contentFit="cover"
         />
-        
-        {/* Profile Image */}
-        <View style={styles.profileImageContainer}>
-          <Image
-            source={{ uri: profileData.profileImage }}
-            style={styles.profileImage}
-          />
-        </View>
-        
+
         {/* Profile Info */}
         <View style={styles.profileInfoContainer}>
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{profileData.name}</Text>
-            {profileData.isAvailable && (
-              <View style={styles.availabilityBadge}>
-                <Text style={styles.availabilityText}>Available</Text>
+          <View style={styles.profileInfoHeader}>
+            {/* Profile Image */}
+            <View style={styles.profileImageContainer}>
+              <Image
+                source={{ uri: profileData.profileImage }}
+                style={styles.profileImage}
+              />
+            </View>
+            <View style={styles.profileInfoHeaderContent}>
+              <View style={styles.nameContainer}>
+                <Text style={styles.name}>{profileData.name}</Text>
+                {profileData.isAvailable && (
+                  <View style={styles.availabilityBadge}>
+                    <Text style={styles.availabilityText}>Available</Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-          
-          <Text style={styles.location}>
-            <Ionicons name="location-outline" size={16} color={COLORS.GRAY} />
-            {' '}
-            {profileData.location.city}, {profileData.location.state}
-          </Text>
-          
-          {/* Experience Level */}
-          <Text style={styles.experienceLevel}>
-            <Ionicons name="star-outline" size={16} color={COLORS.GRAY} />
-            {' '}
-            {profileData.experienceLevel}
-          </Text>
-          
-          {/* Genres */}
-          <View style={styles.tagsContainer}>
-            {profileData.genres.map((genre) => (
-              <View key={genre.id} style={styles.tagChip}>
-                <Text style={styles.tagText}>{genre.name}</Text>
+
+              <Text style={styles.location}>
+                <Ionicons
+                  name="location-outline"
+                  size={16}
+                  color={COLORS.GRAY}
+                />{" "}
+                {profileData.location.city}, {profileData.location.state}
+              </Text>
+
+              {/* Experience Level */}
+              <Text style={styles.experienceLevel}>
+                <Ionicons name="star-outline" size={16} color={COLORS.GRAY} />{" "}
+                {profileData.experienceLevel}
+              </Text>
+
+              {/* Genres */}
+              <View style={styles.tagsContainer}>
+                {profileData.genres.map((genre) => (
+                  <View key={genre.id} style={styles.tagChip}>
+                    <Text style={styles.tagText}>{genre.name}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
-          
+
           {/* Instruments */}
           <View style={styles.instrumentsContainer}>
             <Text style={styles.sectionTitle}>Instruments:</Text>
@@ -284,7 +315,7 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
               ))}
             </View>
           </View>
-          
+
           {/* Bands */}
           {profileData.bands && profileData.bands.length > 0 && (
             <View style={styles.bandsContainer}>
@@ -303,10 +334,10 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
               </View>
             </View>
           )}
-          
+
           {/* Bio */}
           <Text style={styles.bio}>{profileData.bio}</Text>
-          
+
           {/* Stats */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
@@ -318,16 +349,16 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
               <Text style={styles.statLabel}>Following</Text>
             </View>
           </View>
-          
+
           {/* Action Buttons */}
           {user?.id !== musicianId && (
             <View style={styles.actionButtons}>
               <Button
-                title={following ? 'Following' : 'Follow'}
+                title={following ? "Following" : "Follow"}
                 onPress={handleFollow}
                 style={{
                   ...styles.actionButton,
-                  ...(following ? { backgroundColor: COLORS.LIGHT_GRAY } : {})
+                  ...(following ? { backgroundColor: COLORS.LIGHT_GRAY } : {}),
                 }}
               />
               <Button
@@ -352,11 +383,7 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
       );
     }
 
-    return (
-      <ProfileGrid
-        posts={posts}
-      />
-    );
+    return <ProfileGrid posts={posts} />;
   };
 
   return (
@@ -365,8 +392,11 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
         title="Musician Profile"
         onBackPress={() => navigation.goBack()}
       />
-      <ScrollView
-        style={styles.container}
+      <FlatList
+        data={posts}
+        renderItem={renderItem}
+        numColumns={3}
+        ListHeaderComponent={renderProfileHeader}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -375,10 +405,10 @@ const MusicianProfileScreen: React.FC<MusicianProfileScreenProps> = ({ route, na
             tintColor={COLORS.PRIMARY}
           />
         }
-      >
-        {renderProfileHeader()}
-        {renderPosts()}
-      </ScrollView>
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.contentContainer}
+        style={styles.flatList}
+      />
     </SafeAreaView>
   );
 };
@@ -388,22 +418,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
   },
-  container: {
+  flatList: {
     flex: 1,
   },
+  contentContainer: {
+    paddingBottom: SPACING.LARGE,
+  },
+  columnWrapper: {
+    padding: SPACING.TINY,
+  },
+  profileInfoHeaderContent: {
+    paddingTop: SPACING.MEDIUM,
+  },
+  profileInfoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.MEDIUM,
+    marginBottom: SPACING.MEDIUM,
+  },
   profileHeaderContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: SPACING.MEDIUM,
   },
   coverImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    resizeMode: 'cover',
+    resizeMode: "cover",
+    backgroundColor: COLORS.LIGHT_GRAY,
   },
   profileImageContainer: {
-    position: 'absolute',
-    bottom: -50,
-    left: SPACING.MEDIUM,
     borderRadius: BORDER_RADIUS.LARGE,
     ...SHADOWS.MEDIUM,
   },
@@ -416,16 +459,15 @@ const styles = StyleSheet.create({
   },
   profileInfoContainer: {
     padding: SPACING.MEDIUM,
-    paddingTop: 60,
   },
   nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: SPACING.TINY,
   },
   name: {
     fontSize: FONT_SIZE.LARGE,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.DARK_TEXT,
     marginRight: SPACING.SMALL,
   },
@@ -438,7 +480,7 @@ const styles = StyleSheet.create({
   availabilityText: {
     color: COLORS.WHITE,
     fontSize: FONT_SIZE.TINY,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   location: {
     fontSize: FONT_SIZE.SMALL,
@@ -451,8 +493,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.SMALL,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: SPACING.MEDIUM,
   },
   tagChip: {
@@ -469,7 +511,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: FONT_SIZE.MEDIUM,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.DARK_TEXT,
     marginBottom: SPACING.SMALL,
   },
@@ -480,7 +522,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.MEDIUM,
   },
   bandsList: {
-    marginTop: SPACING.SMALL,
   },
   bandItem: {
     marginBottom: SPACING.SMALL,
@@ -501,7 +542,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   statsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: SPACING.MEDIUM,
   },
   statItem: {
@@ -509,7 +550,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: FONT_SIZE.MEDIUM,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.DARK_TEXT,
     marginBottom: SPACING.TINY,
   },
@@ -518,8 +559,8 @@ const styles = StyleSheet.create({
     color: COLORS.GRAY,
   },
   actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   actionButton: {
     flex: 1,
@@ -527,10 +568,34 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: SPACING.LARGE,
+  },
+  postItem: {
+    flex: 1,
+    aspectRatio: 1,
+    margin: 1,
+  },
+  postImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  imageCountBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    borderRadius: BORDER_RADIUS.SMALL,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  imageCountText: {
+    color: COLORS.WHITE,
+    fontSize: FONT_SIZE.SMALL,
+    fontWeight: "bold",
   },
 });
 
-export default MusicianProfileScreen; 
+export default MusicianProfileScreen;
